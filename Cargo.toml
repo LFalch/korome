@@ -1,0 +1,9 @@
+[package]
+name = "korome"
+version = "0.1.0"
+authors = ["LFalch <lucas@wasd.dk>"]
+
+[dependencies]
+glium = "0.12"
+image = "0.3"
+time  = "0.1"
