@@ -4,6 +4,6 @@ version = "0.1.0"
 authors = ["LFalch <lucas@wasd.dk>"]
 
 [dependencies]
-glium = "0.12"
-image = "0.3"
+glium = "0.13"
+image = "0.6"
 time  = "0.1"
