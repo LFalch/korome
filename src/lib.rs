@@ -4,16 +4,19 @@
 #[macro_use]
 extern crate glium;
 extern crate time;
+extern crate image;
+extern crate toml;
 
 /// Provides all rendering functionality
 pub mod draw;
 /// Provides useful mathematical functionality for vectors
 pub mod vector;
+/// Provides functionality for reading a settings file in TOML format
+pub mod settings;
 
 pub use draw::Draw as Draw;
 pub use vector::Vector2 as Vector2;
-
-use draw::Vertex;
+pub use settings::Settings as Settings;
 
 use glium::{Display, DisplayBuild, Frame, Surface};
 use glium::glutin::{Event, ElementState, /*VirtualKeyCode*/};
@@ -21,8 +24,6 @@ use glium::glutin::{Event, ElementState, /*VirtualKeyCode*/};
 use time::precise_time_s as time_s;
 
 use std::collections::HashSet;
-
-implement_vertex!(Vertex, position, tex_coords);
 
 /// Creates a window with a title
 pub fn create_window(title: &str, width: u32, height: u32) -> Display {

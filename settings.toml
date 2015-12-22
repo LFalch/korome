@@ -1,0 +1,6 @@
+maximum-delta = 0.02
+deltalog = false
+resolution = "1600x900"
+fullscreen = false
+fps = 60
+vsync = true

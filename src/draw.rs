@@ -7,16 +7,25 @@ use glium::{VertexBuffer, Program, DrawParameters, Surface};
 use glium::backend::glutin_backend::GlutinFacade;
 use glium::texture::Texture2d;
 
-
 use std::io::{Read, Cursor, Result as IOResult};
 use std::fs::File;
 
-
-#[derive(Copy, Clone)]
 #[allow(missing_docs)]
+#[derive(Copy, Clone)]
 pub struct Vertex {
-    pub position: [f32; 2],
-    pub tex_coords: [f32; 2],
+    position  : [f32; 2],
+    tex_coords: [f32; 2]
+}
+
+implement_vertex!(Vertex, position, tex_coords);
+
+impl Vertex{
+    fn new(position: (f32, f32), tex_coords: (f32, f32)) -> Self{
+        Vertex{
+            position  : [ position .0,  position .1],
+            tex_coords: [tex_coords.0, tex_coords.1]
+         }
+    }
 }
 
 /// A type for having two `VertexBuffer`s as an array
@@ -25,7 +34,7 @@ pub type VertexBuffers = [VertexBuffer<Vertex>; 2];
 /// Struct for storing a 2D texture
 pub struct Texture{
     tex: Texture2d,
-    size: (u32, u32),
+    size: (f32, f32),
     vertex_buffers: VertexBuffers,
 }
 
@@ -42,14 +51,14 @@ impl Texture {
 
         let (w, h) = ((width as f32/dis_width as f32)/2.0, (height as f32/dis_height as f32)/2.0);
 
-        let v1 = Vertex{ position: [-w, -h], tex_coords: [0.0, 0.0] };
-        let v2 = Vertex{ position: [ w, -h], tex_coords: [1.0, 0.0] };
-        let v3 = Vertex{ position: [ w,  h], tex_coords: [1.0, 1.0] };
-        let v4 = Vertex{ position: [-w,  h], tex_coords: [0.0, 1.0] };
+        let v1 = Vertex::new((-w, -h), (0.0, 0.0));
+        let v2 = Vertex::new(( w, -h), (1.0, 0.0));
+        let v3 = Vertex::new(( w,  h), (1.0, 1.0));
+        let v4 = Vertex::new((-w,  h), (0.0, 1.0));
 
         Texture {
             tex: Texture2d::new(display, image).unwrap(),
-            size: (width, height),
+            size: (w, h),
             vertex_buffers: [VertexBuffer::new(display, &vec![v1, v2, v4]).unwrap(), VertexBuffer::new(display, &vec![v2, v3, v4]).unwrap()],
         }
     }
@@ -69,7 +78,7 @@ impl Texture {
     }
 
     /// Gets the given size of this `Texture`
-    pub fn get_size(&self) -> (u32, u32){
+    pub fn get_size(&self) -> (f32, f32){
         self.size
     }
 }
@@ -180,7 +189,7 @@ impl<'a> Draw<'a> {
 }
 
 /// An interface for drawing a texture on the screen using
-#[must_use]
+#[must_use = "`TextureDrawer` does nothing until drawn"]
 pub struct TextureDrawer<'a> {
     scale_matrix      : [[f32; 4]; 4],
     rotation_matrix   : [[f32; 4]; 4],
@@ -206,20 +215,20 @@ impl<'a> TextureDrawer<'a> {
         }
     }
 
-    /* TODO fix rotate
+    // TODO fix rotate
+    /// Rotates the texture, though it seems in a bit of a skewed manner
     pub fn rotate(self, rotation: f32) -> TextureDrawer<'a> {
         TextureDrawer{
             rotation_matrix: [
-                [ rotation.cos(), rotation.sin(), 0.0, 0.0],
-                [-rotation.sin(), rotation.cos(), 0.0, 0.0],
-                [            0.0,            0.0, 1.0, 0.0],
-                [            0.0,            0.0, 0.0, 1.0]
+                [rotation.cos(), -rotation.sin(), 0.0, 0.0],
+                [rotation.sin(),  rotation.cos(), 0.0, 0.0],
+                [           0.0,             0.0, 1.0, 0.0],
+                [           0.0,             0.0, 0.0, 1.0]
             ],
             ..
             self
         }
     }
-    */
 
     /// Translates the texture on the screen
     pub fn translate(self, translate_x: f32, translate_y: f32) -> TextureDrawer<'a> {

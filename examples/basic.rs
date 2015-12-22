@@ -24,14 +24,15 @@ fn main() {
     }
 
     let mut game = Logic{
-        pos: Vector2::new(-0.5, 0.0)
+        pos: Vector2::new(-0.5, 0.0),
+        theta: 0.0
     }.into_game(draw);
 
     game.run_until_closed(&display);
 }
 
 fn load_textures(draw: &mut Draw, display: &Display) -> io::Result<()>{
-    try!(draw.load_texture(display, "planet", 32, 32));
+    try!(draw.load_texture(display, "planet", 64, 64));
 
     // draw.load_texture_from_bytes(display, "planet", include_bytes!("../planet.png"), 32, 32);
 
@@ -39,17 +40,20 @@ fn load_textures(draw: &mut Draw, display: &Display) -> io::Result<()>{
 }
 
 struct Logic {
-    pos: Vector2
+    pos: Vector2,
+    theta: f32,
 }
 
 impl GameLogic for Logic {
     fn logic (&mut self, ip: InfoPacket){
-        let vel = 0.22 * ip.delta();
+        let delta = *ip.delta() as f32;
+
+        let vel = 0.22 * delta;
         let pos = &mut self.pos;
         // (17, 30, 31, 32) == (W, A, S, D)
         is_down!{
             ip;
-            
+
             75, 30 => {
                 pos.x -= vel
             },
@@ -61,6 +65,12 @@ impl GameLogic for Logic {
             },
             72, 17 => {
                 pos.y += vel
+            },
+            18 => {
+                self.theta += delta
+            },
+            16 => {
+                self.theta -= delta
             }
         }
 
@@ -73,8 +83,9 @@ impl GameLogic for Logic {
         //.rotate() doesn't actually work properly right now
 
         draw.texture("planet").unwrap()
-            .scale(4.0, 4.0)
-            .translate(self.pos.get_x() as f32, self.pos.get_y() as f32)
+            .scale(2.0, 2.0)
+            .rotate(self.theta as f32)
+            .translate(self.pos.get_x(), self.pos.get_y())
             .draw(target);
     }
 }
