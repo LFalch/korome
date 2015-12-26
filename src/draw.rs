@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use glium::{VertexBuffer, Program, DrawParameters, Surface};
 use glium::backend::glutin_backend::GlutinFacade;
 use glium::texture::Texture2d;
+use glium::index::NoIndices;
 
 use std::io::{Read, Cursor, Result as IOResult};
 use std::fs::File;
@@ -40,7 +41,7 @@ pub struct Texture{
 
 impl Texture {
     /// Creates a new instance of `Texture` with the given bytes
-    pub fn new<'a, 'b>(display: &'a GlutinFacade, bytes: &'b [u8], width: u32, height: u32) -> Texture{
+    pub fn new(display: &GlutinFacade, bytes: &[u8], width: u32, height: u32) -> Texture{
         let (dis_width, dis_height) = display.get_window().unwrap().get_inner_size().unwrap();
 
         let image = image::load(Cursor::new(bytes),
@@ -64,7 +65,7 @@ impl Texture {
     }
 
     /// Reads the bytes of a texture from a file and creates a `Texture` instance
-    pub fn new_from_file<'a, 'b>(display: &'a GlutinFacade, str_path: &'b str, width: u32, height: u32) -> IOResult<Texture>{
+    pub fn new_from_file(display: &GlutinFacade, str_path: &str, width: u32, height: u32) -> IOResult<Texture>{
         let mut f = try!(File::open(str_path));
         let mut bytes = Vec::new();
         try!(f.read_to_end(&mut bytes));
@@ -94,8 +95,9 @@ type Textures<'a> = HashMap<&'a str, Texture>;
 
 /// Functionality for rendering
 pub struct Draw<'a> {
+    display: GlutinFacade,
     program: Program,
-    indices: glium::index::NoIndices,
+    indices: NoIndices,
     params : DrawParameters<'a>,
     size   : (u32, u32),
     textures: Textures<'a>
@@ -103,7 +105,7 @@ pub struct Draw<'a> {
 
 impl<'a> Draw<'a> {
     /// Creates a new `Draw` instance using the given display
-    pub fn new(display: &GlutinFacade) -> Draw {
+    pub fn new(display: GlutinFacade) -> Draw<'a> {
         let vertex_shader_src = r#"
             #version 140
 
@@ -142,28 +144,25 @@ impl<'a> Draw<'a> {
         };
 
         Draw{
-            program: Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap(),
-            indices: glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+            program: Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap(),
+            indices: NoIndices(glium::index::PrimitiveType::TrianglesList),
+            textures: HashMap::new(),
+            display: display,
             size: size,
             params: params,
-            textures: HashMap::new(),
         }
     }
 
     /// Loads a texture from a byte slice into the texture cache
-    pub fn load_texture_from_bytes(&mut self, display: &GlutinFacade,
-            identifier: &'a str, bytes: &[u8], width: u32, height: u32) {
-
-        let texture = Texture::new(display, bytes, width, height);
+    pub fn load_texture_from_bytes(&mut self, identifier: &'a str, bytes: &[u8], width: u32, height: u32) {
+        let texture = Texture::new(&self.display, bytes, width, height);
 
         self.textures.insert(identifier, texture);
     }
 
     /// Loads a texture from a file into the texture cache
-    pub fn load_texture(&mut self, display: &GlutinFacade,
-            identifier: &'a str, width: u32, height: u32) -> IOResult<()> {
-
-        let texture = try!(Texture::new_from_file(display, &format!("{}.png",identifier), width, height));
+    pub fn load_texture(&mut self, identifier: &'a str, width: u32, height: u32) -> IOResult<()> {
+        let texture = try!(Texture::new_from_file(&self.display, &format!("{}.png", identifier), width, height));
         self.textures.insert(identifier, texture);
 
         Ok(())
@@ -186,6 +185,11 @@ impl<'a> Draw<'a> {
     pub fn get_size(&self) -> (u32, u32) {
         self.size
     }
+
+    /// Returns the inner `GlutinFacade`
+    pub fn get_display(&self) -> &GlutinFacade {
+        &self.display
+    }
 }
 
 /// An interface for drawing a texture on the screen using
@@ -196,7 +200,7 @@ pub struct TextureDrawer<'a> {
     translation_matrix: [[f32; 4]; 4],
     texture: &'a Texture,
     program: &'a glium::Program,
-    indices: &'a glium::index::NoIndices,
+    indices: &'a NoIndices,
     params : &'a glium::DrawParameters<'a>,
 }
 
@@ -216,6 +220,7 @@ impl<'a> TextureDrawer<'a> {
     }
 
     // TODO fix rotate
+    // NOTE rotate works fine when the window is square
     /// Rotates the texture, though it seems in a bit of a skewed manner
     pub fn rotate(self, rotation: f32) -> TextureDrawer<'a> {
         TextureDrawer{

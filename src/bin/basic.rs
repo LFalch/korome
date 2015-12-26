@@ -2,18 +2,18 @@ extern crate glium;
 #[macro_use]
 extern crate korome;
 
-use glium::{Display, Surface};
-use korome::{Draw, GameLogic, InfoPacket, Vector2};
+use glium::Surface;
+use korome::{Game, Draw, GameLogic, InfoPacket, Vector2};
 
 use std::io;
 use std::io::ErrorKind::NotFound;
 use std::error::Error;
 
 fn main() {
-    let display = korome::create_window("glium works!", 1200, 900);
-    let mut draw = Draw::new(&display);
+    let display = korome::create_window("glium works!", 1000, 1000);
+    let mut draw = Draw::new(display);
 
-    if let Err(e) = load_textures(&mut draw, &display){
+    if let Err(e) = load_textures(&mut draw){
         match e.kind(){
             NotFound => println!("Not all textures files were found"),
             _        => println!("An unknown error occured when trying to load textures:\n{:?}", e)
@@ -23,18 +23,18 @@ fn main() {
         return
     }
 
-    let mut game = Logic{
+    let game = Game::new(Logic{
         pos: Vector2::new(-0.5, 0.0),
         theta: 0.0
-    }.into_game(draw);
+    }, draw);
 
-    game.run_until_closed(&display);
+    game.run_until_closed();
 }
 
-fn load_textures(draw: &mut Draw, display: &Display) -> io::Result<()>{
-    try!(draw.load_texture(display, "planet", 64, 64));
+fn load_textures(draw: &mut Draw) -> io::Result<()>{
+    // try!(draw.load_texture("planet", 64, 64));
 
-    // draw.load_texture_from_bytes(display, "planet", include_bytes!("../planet.png"), 32, 32);
+    draw.load_texture_from_bytes("planet", include_bytes!("../../planet.png"), 64, 64);
 
     Ok(())
 }
@@ -46,7 +46,7 @@ struct Logic {
 
 impl GameLogic for Logic {
     fn logic (&mut self, ip: InfoPacket){
-        let delta = *ip.delta() as f32;
+        let delta = ip.delta() as f32;
 
         let vel = 0.22 * delta;
         let pos = &mut self.pos;

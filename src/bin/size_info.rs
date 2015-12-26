@@ -4,6 +4,7 @@ extern crate glium;
 use korome::{Draw, Vector2, Game, Settings, InfoPacket, GameLogic};
 use korome::draw::{Texture, TextureDrawer, Vertex, VertexBuffers};
 use glium::VertexBuffer;
+use glium::backend::glutin_backend::GlutinFacade;
 
 macro_rules! print_type_info{
     ($($t:ty),*) => {
@@ -17,7 +18,7 @@ macro_rules! print_type_info{
 }
 
 fn main(){
-    print_type_info!(Logic, Draw, Vector2, Texture, Vertex, Game<Logic>, InfoPacket, Settings, TextureDrawer, VertexBuffers, VertexBuffer<Vertex>);
+    print_type_info!(Logic, Draw, Vector2, Texture, Vertex, Game<Logic>, InfoPacket, Settings, TextureDrawer, GlutinFacade, VertexBuffers, VertexBuffer<Vertex>);
 }
 
 struct Logic;
