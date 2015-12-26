@@ -7,8 +7,9 @@ use glium::VertexBuffer;
 
 macro_rules! print_type_info{
     ($($t:ty),*) => {
-        use std::mem::{align_of, size_of};
         $({
+            use std::mem::{align_of, size_of};
+
             let info = (size_of::<$t>(), align_of::<$t>());
             println!("{}\t: {} === {} * {}", stringify!($t), info.0, info.0/info.1, info.1);
         })*
