@@ -2,3 +2,4 @@
 *.sh
 target
 Cargo.lock
+version.txt

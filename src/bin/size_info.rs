@@ -1,9 +1,9 @@
 extern crate korome;
 extern crate glium;
 
-use korome::{Draw, Vector2, Game, Settings, InfoPacket, GameLogic};
-use korome::draw::{Texture, TextureDrawer, Vertex, VertexBuffers};
-use glium::VertexBuffer;
+use korome::{Draw, Vector2, Game, Settings, LogicArgs, RenderArgs, GameLogic};
+use korome::draw::TextureDrawer;
+
 use glium::backend::glutin_backend::GlutinFacade;
 
 macro_rules! print_type_info{
@@ -18,17 +18,19 @@ macro_rules! print_type_info{
 }
 
 fn main(){
-    print_type_info!(Logic, Draw, Vector2, Texture, Vertex, Game<Logic>, InfoPacket, Settings, TextureDrawer, GlutinFacade, VertexBuffers, VertexBuffer<Vertex>);
+    println!("Version: {}", korome::VERSION);
+
+    print_type_info!(Logic, Draw, Vector2, Game<Logic>, LogicArgs, RenderArgs, Settings, TextureDrawer, GlutinFacade);
 }
 
 struct Logic;
 
 impl GameLogic for Logic {
-    fn logic (&mut self, _ip: InfoPacket){
+    fn logic (&mut self, _: LogicArgs){
 
     }
 
-    fn render(&self, _target: &mut glium::Frame, _draw: &Draw){
+    fn render(&self, _: RenderArgs){
 
     }
 }
