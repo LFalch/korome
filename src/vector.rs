@@ -7,6 +7,7 @@ pub struct Vector2{
 }
 
 use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::convert::From;
 
 impl Vector2{
     /// Creates a new `Vector2` instance
@@ -121,5 +122,11 @@ impl Neg for Vector2{
 
     fn neg(self) -> Vector2{
         Vector2::new(-self.x, -self.y)
+    }
+}
+
+impl From<(f32, f32)> for Vector2{
+    fn from(tuple: (f32, f32)) -> Self{
+        Vector2::new(tuple.0, tuple.1)
     }
 }

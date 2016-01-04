@@ -1,10 +1,12 @@
 [package]
 name = "korome"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["LFalch <lucas@wasd.dk>"]
+build = "build.rs"
 
 [dependencies]
 glium = "0.13"
 image = "0.6"
 time  = "0.1"
 toml = "0.1"
+quick-error = "0.2.1"
