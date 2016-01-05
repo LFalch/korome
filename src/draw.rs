@@ -111,8 +111,7 @@ pub struct Draw<'a> {
     display: GlutinFacade,
     program: Program,
     indices: NoIndices,
-    params : DrawParameters<'a>,
-    halfsize: (f32, f32)
+    params : DrawParameters<'a>
 }
 
 impl<'a> Draw<'a> {
@@ -178,21 +177,21 @@ impl<'a> Draw<'a> {
             indices: NoIndices(glium::index::PrimitiveType::TrianglesList),
             display: display,
             params : params,
-            halfsize: (w, h),
+            // halfsize: (w, h),
         }
     }
 
-    /// Loads a texture from a byte slice into the texture cache
+    /// Returns a `Texture` created from a byte slice
     pub fn load_texture_from_bytes(&self, bytes: &[u8], width: u32, height: u32) -> Result<Texture> {
         Texture::new(&self.display, bytes, width, height)
     }
 
-    /// Loads a texture from a file into the texture cache
+    /// Returns a `Texture` created from a file
     pub fn load_texture(&self, identifier: &'a str, width: u32, height: u32) -> Result<Texture> {
         Texture::new_from_file(&self.display, &format!("{}.png", identifier), width, height)
     }
 
-    /// Draws a slice of `Drawable`s to the screen
+    /// Returns a `DrawablesDrawer` for drawing `Drawable`s to the screen
     pub fn draw_drawables<D: Drawable>(&'a self, target: &'a mut glium::Frame) -> DrawablesDrawer<D>{
         DrawablesDrawer{
             drawables: Vec::new(),
@@ -201,18 +200,13 @@ impl<'a> Draw<'a> {
         }
     }
 
-    /// Returns the size of the window
-    pub fn get_halfsize(&self) -> (f32, f32) {
-        self.halfsize
-    }
-
     /// Returns the inner `GlutinFacade`
     pub fn get_display(&self) -> &GlutinFacade {
         &self.display
     }
 }
 
-/// An interface for drawing a `Drawable`s on the screen
+/// An interface for drawing `Drawable`s on the screen
 #[must_use = "`DrawablesDrawer` does nothing until drawn"]
 pub struct DrawablesDrawer<'a, D: 'a + Drawable>{
     drawables: Vec<&'a D>,
@@ -228,8 +222,8 @@ impl<'a, D: Drawable> DrawablesDrawer<'a, D>{
         self
     }
 
-    /// Appends a vector of `Drawable`s to the inner vector
-    pub fn append<I: IntoIterator<Item = &'a D>>(mut self, drawables: I) -> Self{
+    /// Adds an `Iterator` of `Drawable`s to be drawn
+    pub fn add_vec<I: IntoIterator<Item = &'a D>>(mut self, drawables: I) -> Self{
         for d in drawables.into_iter(){
             self = self.add(d);
         }
@@ -263,7 +257,7 @@ pub struct TextureDrawer<'a> {
 }
 
 impl<'a> TextureDrawer<'a> {
-    /// Rotates the texture, though it seems in a bit of a skewed manner
+    /// Rotates the texture
     pub fn rotate(self, rotation: f32) -> TextureDrawer<'a> {
         TextureDrawer{
             rotation: rotation,
@@ -272,7 +266,7 @@ impl<'a> TextureDrawer<'a> {
         }
     }
 
-    /// Translates the texture on the screen
+    /// Translates the texture
     pub fn translate(self, translate_x: f32, translate_y: f32) -> TextureDrawer<'a> {
         TextureDrawer{
             translation: (translate_x, translate_y),

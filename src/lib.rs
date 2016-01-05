@@ -37,7 +37,7 @@ pub const VERSION: &'static str = include_str!("../version.txt");
 pub type Result<T> = std::result::Result<T, KoromeError>;
 
 quick_error! {
-    /// Describes errors that can occur in this crate
+    /// Wraps together errors that can occur in this crate
     #[derive(Debug)]
     pub enum KoromeError{
         /// A `glium::DrawError`
@@ -76,7 +76,7 @@ quick_error! {
 pub struct LogicArgs<'a>{
     /// The delta time since last frame
     delta    : f64,
-    /// A vector of all key events that happpened
+    /// A vector of all key events that happened
     keyevents: &'a [(bool, u8)],
     /// A `HashSet` of all keys that are pressed down
     down_keys: &'a HashSet<u8>,
@@ -85,7 +85,7 @@ pub struct LogicArgs<'a>{
 }
 
 impl<'a> LogicArgs<'a>{
-    /// Returns the delta value of the InfoPacket
+    /// Returns the delta time
     pub fn delta(&self) -> f64{
         self.delta
     }
@@ -123,7 +123,7 @@ impl<'a> RenderArgs<'a>{
         self.draw
     }
 
-    /// Draws a slice of `Drawable`s to the screen using `Draw::texture()`
+    /// Returns a `DrawablesDrawer` for drawing `Drawable`s to the screen
     pub fn draw_drawables<D: Drawable>(&mut self) -> DrawablesDrawer<D>{
         self.draw.draw_drawables(self.target)
     }
