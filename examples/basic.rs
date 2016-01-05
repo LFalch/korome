@@ -105,7 +105,7 @@ impl<'a> GameLogic for Logic<'a> {
     fn render(&self, mut r_args: RenderArgs){
         //.rotate() doesn't actually work properly right now
         r_args.draw_drawables()
-            .append(&self.objects)
+            .add_vec(&self.objects)
             .draw()
             .unwrap_or_else(|e| panic!("{}", e))
     }
