@@ -11,7 +11,7 @@ use glium::index::NoIndices;
 use std::io::{Read, Cursor};
 use std::fs::File;
 
-use super::{Result, KoromeError};
+use super::{Result};
 
 #[derive(Copy, Clone)]
 struct Vertex {
@@ -33,14 +33,14 @@ impl Vertex{
 type VertexBuffers = [VertexBuffer<Vertex>; 2];
 
 /// Struct for storing a 2D texture
-struct Texture{
+pub struct Texture{
     tex: Texture2d,
     vertex_buffers: VertexBuffers,
 }
 
 impl Texture {
     /// Creates a new instance of `Texture` with the given bytes
-    pub fn new(display: &GlutinFacade, bytes: &[u8], width: u32, height: u32) -> Result<Texture>{
+    fn new(display: &GlutinFacade, bytes: &[u8], width: u32, height: u32) -> Result<Texture>{
         //let (dis_width, dis_height) = display.get_window().unwrap().get_inner_size().unwrap();
 
         let image = try!(image::load(Cursor::new(bytes),
@@ -63,7 +63,7 @@ impl Texture {
     }
 
     /// Reads the bytes of a texture from a file and creates a `Texture` instance
-    pub fn new_from_file(display: &GlutinFacade, str_path: &str, width: u32, height: u32) -> Result<Texture>{
+    fn new_from_file(display: &GlutinFacade, str_path: &str, width: u32, height: u32) -> Result<Texture>{
         let mut f = try!(File::open(str_path));
         let mut bytes = Vec::new();
         try!(f.read_to_end(&mut bytes));
@@ -74,6 +74,15 @@ impl Texture {
     /// Gets the array of `VertexBuffer`s
     fn get_vertex_bufffers(&self) -> &VertexBuffers {
         &self.vertex_buffers
+    }
+
+    /// Returns a `TextureDrawer` to draw the `Texture1`
+    pub fn drawer(&self) -> TextureDrawer{
+        TextureDrawer{
+            texture: &self,
+            rotation   : 0.0,
+            translation: (0.0, 0.0),
+        }
     }
 }
 
@@ -93,8 +102,8 @@ pub trait Drawable {
     fn get_pos(&self) -> (f32, f32);
     /// Returns the rotation it should be drawn with
     fn get_rotation(&self) -> f32;
-    /// Returns the texture's identifier
-    fn get_texture(&self) -> &str;
+    /// Returns the `Texture`
+    fn get_texture(&self) -> &Texture;
 }
 
 /// Functionality for rendering
@@ -103,8 +112,7 @@ pub struct Draw<'a> {
     program: Program,
     indices: NoIndices,
     params : DrawParameters<'a>,
-    halfsize: (f32, f32),
-    textures: Textures<'a>
+    halfsize: (f32, f32)
 }
 
 impl<'a> Draw<'a> {
@@ -170,51 +178,27 @@ impl<'a> Draw<'a> {
             indices: NoIndices(glium::index::PrimitiveType::TrianglesList),
             display: display,
             params : params,
-            textures: HashMap::new(),
             halfsize: (w, h),
         }
     }
 
     /// Loads a texture from a byte slice into the texture cache
-    pub fn load_texture_from_bytes(&mut self, identifier: &'a str, bytes: &[u8], width: u32, height: u32) -> Result<()> {
-        let texture = try!(Texture::new(&self.display, bytes, width, height));
-
-        self.textures.insert(identifier, texture);
-
-        Ok(())
+    pub fn load_texture_from_bytes(&self, bytes: &[u8], width: u32, height: u32) -> Result<Texture> {
+        Texture::new(&self.display, bytes, width, height)
     }
 
     /// Loads a texture from a file into the texture cache
-    pub fn load_texture(&mut self, identifier: &'a str, width: u32, height: u32) -> Result<()> {
-        let texture = try!(Texture::new_from_file(&self.display, &format!("{}.png", identifier), width, height));
-        self.textures.insert(identifier, texture);
-
-        Ok(())
+    pub fn load_texture(&self, identifier: &'a str, width: u32, height: u32) -> Result<Texture> {
+        Texture::new_from_file(&self.display, &format!("{}.png", identifier), width, height)
     }
 
-    /// Draws a slice of `Drawable`s to the screen using `Draw::texture()`
-    pub fn draw_drawables<D: Drawable>(&self, target: &mut glium::Frame, drawables: &[D]) -> Result<()>{
-        for drawable in drawables{
-            let (x, y) = drawable.get_pos();
-
-            try!(
-                try!(self.texture(drawable.get_texture()))
-                    .rotate(drawable.get_rotation())
-                    .translate(x, y)
-                    .draw(target, self)
-            );
+    /// Draws a slice of `Drawable`s to the screen
+    pub fn draw_drawables<D: Drawable>(&'a self, target: &'a mut glium::Frame) -> DrawablesDrawer<D>{
+        DrawablesDrawer{
+            drawables: Vec::new(),
+            target: target,
+            draw: self
         }
-
-        Ok(())
-    }
-
-    /// Returns a `TextureDrawer` for a texture if it exists in the cache
-    pub fn texture(&self, tex: &str) -> Result<TextureDrawer> {
-        self.textures.get(tex).map(|texture| TextureDrawer{
-            texture: texture,
-            rotation   : 0.0,
-            translation: (0.0, 0.0),
-        }).ok_or(KoromeError::TextureNotFound)
     }
 
     /// Returns the size of the window
@@ -228,7 +212,49 @@ impl<'a> Draw<'a> {
     }
 }
 
-/// An interface for drawing a texture on the screen using
+/// An interface for drawing a `Drawable`s on the screen
+#[must_use = "`DrawablesDrawer` does nothing until drawn"]
+pub struct DrawablesDrawer<'a, D: 'a + Drawable>{
+    drawables: Vec<&'a D>,
+    target: &'a mut glium::Frame,
+    draw  : &'a Draw<'a>
+}
+
+impl<'a, D: Drawable> DrawablesDrawer<'a, D>{
+    /// Adds another `Drawble` to be drawn
+    pub fn add(mut self, drawable: &'a D) -> Self{
+        self.drawables.push(drawable);
+
+        self
+    }
+
+    /// Appends a vector of `Drawable`s to the inner vector
+    pub fn append<I: IntoIterator<Item = &'a D>>(mut self, drawables: I) -> Self{
+        for d in drawables.into_iter(){
+            self = self.add(d);
+        }
+
+        self
+    }
+
+    /// Finally draws the `Drawable`s
+    pub fn draw(self) -> Result<()>{
+        for drawable in self.drawables{
+            let (x, y) = drawable.get_pos();
+
+            try!(
+                drawable.get_texture().drawer()
+                    .rotate(drawable.get_rotation())
+                    .translate(x, y)
+                    .draw(self.target, self.draw)
+            );
+        }
+
+        Ok(())
+    }
+}
+
+/// An interface for drawing a texture on the screen
 #[must_use = "`TextureDrawer` does nothing until drawn"]
 pub struct TextureDrawer<'a> {
     translation: (f32, f32),
@@ -237,8 +263,6 @@ pub struct TextureDrawer<'a> {
 }
 
 impl<'a> TextureDrawer<'a> {
-    // TODO fix rotate
-    // NOTE rotate works fine when the window is square
     /// Rotates the texture, though it seems in a bit of a skewed manner
     pub fn rotate(self, rotation: f32) -> TextureDrawer<'a> {
         TextureDrawer{

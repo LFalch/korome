@@ -19,7 +19,7 @@ pub use draw::Draw;
 pub use vector::Vector2;
 pub use settings::Settings;
 
-use draw::Drawable;
+use draw::{Drawable, DrawablesDrawer};
 
 use glium::{Frame, Surface};
 use glium::glutin::{Event, ElementState, /*VirtualKeyCode*/};
@@ -40,10 +40,6 @@ quick_error! {
     /// Describes errors that can occur in this crate
     #[derive(Debug)]
     pub enum KoromeError{
-        /// Texture wasn't found in cache
-        TextureNotFound {
-            display("The Texture with the given identifier didn't exist in the cache.")
-        }
         /// A `glium::DrawError`
         DrawError(err: glium::DrawError){
             from()
@@ -128,8 +124,8 @@ impl<'a> RenderArgs<'a>{
     }
 
     /// Draws a slice of `Drawable`s to the screen using `Draw::texture()`
-    pub fn draw_drawables<D: Drawable>(&mut self, drawables: &[D]) -> Result<()>{
-        self.draw.draw_drawables(self.target, drawables)
+    pub fn draw_drawables<D: Drawable>(&mut self) -> DrawablesDrawer<D>{
+        self.draw.draw_drawables(self.target)
     }
 }
 
