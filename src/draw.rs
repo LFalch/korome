@@ -33,6 +33,7 @@ impl Vertex{
 type VertexBuffers = [VertexBuffer<Vertex>; 2];
 
 /// Struct for storing a 2D texture
+// NOTE Size: 1 696 bytes
 pub struct Texture{
     tex: Texture2d,
     vertex_buffers: VertexBuffers,
