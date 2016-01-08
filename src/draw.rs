@@ -135,9 +135,6 @@ impl<'a> Draw<'a> {
         let vertex_shader_src = &r#"
             #version 140
 
-            int width = $width;
-            int height = $height;
-
             in vec2 position;
             in vec2 tex_coords;
             out vec2 v_tex_coords;
@@ -149,8 +146,8 @@ impl<'a> Draw<'a> {
 
                 vec4 pos = matrix * vec4(position, 0.0, 1.0);
 
-                pos.x /= width;
-                pos.y /= height;
+                pos.x /= $width;
+                pos.y /= $height;
 
                 gl_Position = pos;
             }
