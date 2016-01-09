@@ -162,9 +162,9 @@ impl<'a> RenderArgs<'a>{
 /// ```
 #[macro_export]
 macro_rules! is_down{
-    ( $l_args:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {
-        $( if $( $l_args.is_down(&Some(glium::glutin::VirtualKeyCode::$key)) )||* $b )*
-    }
+    ( $l_args:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {{
+        $( if $( $l_args.is_down(&Some(glium::glutin::VirtualKeyCode::$key)) )||+ $b )+
+    }}
 }
 
 /// A trait for the functions a `Game` would need in its loop

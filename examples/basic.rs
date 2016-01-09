@@ -77,7 +77,7 @@ impl<'a> GameLogic for Logic<'a> {
         is_down!{
             l_args;
 
-            Left , A => {
+            Left, A => {
                 pos.x -= vel
             },
             Right, D => {
