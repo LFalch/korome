@@ -20,13 +20,13 @@ fn main() {
 }
 
 struct Object<'a>{
-    pos: Vector2,
+    pos: Vector2<f32>,
     theta: f32,
     tex: &'a Texture
 }
 
 impl<'a> Object<'a>{
-    fn new<V: Into<Vector2>>(tex: &'a Texture, pos: V, theta: f32) -> Self{
+    fn new<V: Into<Vector2<f32>>>(tex: &'a Texture, pos: V, theta: f32) -> Self{
         Object{
             tex: tex,
             pos: pos.into(),
@@ -78,16 +78,16 @@ impl<'a> GameLogic for Logic<'a> {
             l_args;
 
             Left, A => {
-                pos.x -= vel
+                pos.0 -= vel
             },
             Right, D => {
-                pos.x += vel
+                pos.0 += vel
             },
             Down , S => {
-                pos.y -= vel
+                pos.1 -= vel
             },
             Up   , W => {
-                pos.y += vel
+                pos.1 += vel
             },
             E => {
                 planet.theta += delta
