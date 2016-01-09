@@ -1,0 +1,2 @@
+korome:
+	cargo build
