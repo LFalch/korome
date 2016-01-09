@@ -71,18 +71,15 @@ quick_error! {
     }
 }
 
-/// An optional `VirtualKeyCode`
-pub type KeyCode = Option<VirtualKeyCode>;
-
 /// Wraps all useful info about what has happened (e.g. events) together
 #[derive(Debug)]
 pub struct LogicArgs<'a>{
     /// The delta time since last frame
     delta    : f64,
     /// A vector of all key events that happened
-    keyevents: &'a [(bool, KeyCode)],
+    keyevents: &'a [(bool, VirtualKeyCode)],
     /// A `HashSet` of all keys that are pressed down
-    down_keys: &'a HashSet<KeyCode>,
+    down_keys: &'a HashSet<VirtualKeyCode>,
     /// The current position of the mouse
     mousepos : (i32, i32)
 }
@@ -94,7 +91,7 @@ impl<'a> LogicArgs<'a>{
     }
 
     /// Returns the slice of key events
-    pub fn keyevents(&self) -> &[(bool, KeyCode)]{
+    pub fn keyevents(&self) -> &[(bool, VirtualKeyCode)]{
         self.keyevents
     }
 
@@ -104,7 +101,7 @@ impl<'a> LogicArgs<'a>{
     }
 
     /// Checks whether a key is pressed down
-    pub fn is_down(&self, key: &KeyCode) -> bool{
+    pub fn is_down(&self, key: &VirtualKeyCode) -> bool{
         self.down_keys.contains(key)
     }
 }
@@ -163,7 +160,7 @@ impl<'a> RenderArgs<'a>{
 #[macro_export]
 macro_rules! is_down{
     ( $l_args:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {{
-        $( if $( $l_args.is_down(&Some(glium::glutin::VirtualKeyCode::$key)) )||+ $b )+
+        $( if $( $l_args.is_down(&glium::glutin::VirtualKeyCode::$key) )||+ $b )+
     }}
 }
 
@@ -192,7 +189,7 @@ impl<'a, G: GameLogic> Game<'a, G> {
     /// Runs the `Game` until the window is closed
     pub fn run_until_closed(mut self){
         let mut last = time_s();
-        let mut down_keys: HashSet<KeyCode> = HashSet::new();
+        let mut down_keys: HashSet<VirtualKeyCode> = HashSet::new();
 
         'main: loop {
             let mut mousepos = (0, 0);
@@ -203,12 +200,16 @@ impl<'a, G: GameLogic> Game<'a, G> {
                     Event::Closed => break 'main,
                     Event::KeyboardInput(es, _, vkc) => match es{
                         ElementState::Pressed  => {
-                            down_keys.insert( vkc);
-                            keys.push((true , vkc))
+                            if let Some(vkc) = vkc{
+                                down_keys.insert( vkc);
+                                keys.push((true , vkc));
+                            }
                         },
                         ElementState::Released => {
-                            down_keys.remove(&vkc);
-                            keys.push((false, vkc))
+                            if let Some(vkc) = vkc{
+                                down_keys.remove(&vkc);
+                                keys.push((false, vkc));
+                            }
                         }
                     },
                     Event::MouseMoved(pos) => mousepos = pos,
