@@ -22,7 +22,7 @@ pub use settings::Settings;
 use draw::{Drawable, DrawablesDrawer};
 
 use glium::{Frame, Surface};
-use glium::glutin::{Event, ElementState, /*VirtualKeyCode*/};
+use glium::glutin::{Event, ElementState, VirtualKeyCode};
 use glium::texture::*;
 
 use time::precise_time_s as time_s;
@@ -71,15 +71,18 @@ quick_error! {
     }
 }
 
+/// An optional `VirtualKeyCode`
+pub type KeyCode = Option<VirtualKeyCode>;
+
 /// Wraps all useful info about what has happened (e.g. events) together
 #[derive(Debug)]
 pub struct LogicArgs<'a>{
     /// The delta time since last frame
     delta    : f64,
     /// A vector of all key events that happened
-    keyevents: &'a [(bool, u8)],
+    keyevents: &'a [(bool, KeyCode)],
     /// A `HashSet` of all keys that are pressed down
-    down_keys: &'a HashSet<u8>,
+    down_keys: &'a HashSet<KeyCode>,
     /// The current position of the mouse
     mousepos : (i32, i32)
 }
@@ -91,7 +94,7 @@ impl<'a> LogicArgs<'a>{
     }
 
     /// Returns the slice of key events
-    pub fn keyevents(&self) -> &[(bool, u8)]{
+    pub fn keyevents(&self) -> &[(bool, KeyCode)]{
         self.keyevents
     }
 
@@ -101,7 +104,7 @@ impl<'a> LogicArgs<'a>{
     }
 
     /// Checks whether a key is pressed down
-    pub fn is_down(&self, key: &u8) -> bool{
+    pub fn is_down(&self, key: &KeyCode) -> bool{
         self.down_keys.contains(key)
     }
 }
@@ -146,10 +149,10 @@ impl<'a> RenderArgs<'a>{
 /// impl GameLogic for Logic{
 ///     fn logic(&self, l_args: LogicArgs){
 ///         is_down!(l_args;
-///             80, 31 => { // 80 is the key code for W and 31 for the up arrow key
+///             W, Up => {
 ///                 self.player_y -= l_args.delta() as f32
 ///             },
-///             72, 17 => { // 72 is the key code for S and 17 for the down arrow key
+///             S, Down => {
 ///                 self.player_y += l_args.delta() as f32
 ///             }
 ///         );
@@ -159,8 +162,8 @@ impl<'a> RenderArgs<'a>{
 /// ```
 #[macro_export]
 macro_rules! is_down{
-    ( $l_args:expr; $( $( $key:expr ),+ => $b:block ),+ ) => {
-        $( if $( $l_args.is_down(&$key) )||* $b )*
+    ( $l_args:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {
+        $( if $( $l_args.is_down(&Some(glium::glutin::VirtualKeyCode::$key)) )||* $b )*
     }
 }
 
@@ -189,7 +192,7 @@ impl<'a, G: GameLogic> Game<'a, G> {
     /// Runs the `Game` until the window is closed
     pub fn run_until_closed(mut self){
         let mut last = time_s();
-        let mut down_keys: HashSet<u8> = HashSet::new();
+        let mut down_keys: HashSet<KeyCode> = HashSet::new();
 
         'main: loop {
             let mut mousepos = (0, 0);
@@ -198,14 +201,14 @@ impl<'a, G: GameLogic> Game<'a, G> {
             for ev in self.draw.get_display().poll_events() {
                 match ev {
                     Event::Closed => break 'main,
-                    Event::KeyboardInput(es, u, _) => match es{
+                    Event::KeyboardInput(es, _, vkc) => match es{
                         ElementState::Pressed  => {
-                            down_keys.insert( u);
-                            keys.push((true , u))
+                            down_keys.insert( vkc);
+                            keys.push((true , vkc))
                         },
                         ElementState::Released => {
-                            down_keys.remove(&u);
-                            keys.push((false, u))
+                            down_keys.remove(&vkc);
+                            keys.push((false, vkc))
                         }
                     },
                     Event::MouseMoved(pos) => mousepos = pos,

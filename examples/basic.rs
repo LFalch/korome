@@ -73,32 +73,28 @@ impl<'a> GameLogic for Logic<'a> {
 
         let vel = 200.0 * delta;
         let pos = &mut planet.pos;
-        // (17, 30, 31, 32) == (W, A, S, D)
+
         is_down!{
             l_args;
 
-            75, 30 => {
+            Left , A => {
                 pos.x -= vel
             },
-            77, 32 => {
+            Right, D => {
                 pos.x += vel
             },
-            80, 31 => {
+            Down , S => {
                 pos.y -= vel
             },
-            72, 17 => {
+            Up   , W => {
                 pos.y += vel
             },
-            18 => {
+            E => {
                 planet.theta += delta
             },
-            16 => {
+            Q => {
                 planet.theta -= delta
             }
-        }
-
-        for &(b, k) in l_args.keyevents(){
-            if !b {println!("{}", k)}
         }
     }
 
