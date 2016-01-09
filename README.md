@@ -1,4 +1,4 @@
-# Korome [![Build Status](https://travis-ci.org/LFalch/korome.svg?branch=master)](https://travis-ci.org/LFalch/korome-rs)
+# korome [![Build Status](https://travis-ci.org/LFalch/korome.svg?branch=master)](https://travis-ci.org/LFalch/korome)
 
 A game engine in Rust (previously Java) using [glium](https://github.com/tomaka/glium)
 
@@ -8,7 +8,7 @@ To use korome, add this to your Cargo.toml:
 git = "https://github.com/LFalch/korome.git"
 ```
 
-Thought right now, this crate is very unstable, and will probably be changing all the time.
+Though right now, this crate is very unstable, and will probably be changing all the time.
 
 ## Documentation
 
