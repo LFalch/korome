@@ -22,7 +22,7 @@ macro_rules! print_type_info{
 fn main(){
     println!("Version: {}", korome::VERSION);
 
-    print_type_info!(Logic, Draw, Vector2, Game<Logic>, LogicArgs, RenderArgs, Settings, Texture2d, Texture, TextureDrawer, GlutinFacade);
+    print_type_info!(Logic, Draw, Texture, Vector2<f32>, Vector2<f64>, Game<Logic>, LogicArgs, RenderArgs, Settings, Texture2d, TextureDrawer, GlutinFacade);
 }
 
 struct Logic;

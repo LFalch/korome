@@ -1,132 +1,141 @@
-/// Struct for representating a mathematical vector: either a position, a velocity or other things similar
-pub struct Vector2{
-    /// Position on the x-axis
-    pub x: f32,
-    /// Position on the y-axis
-    pub y: f32,
-}
+/// Representation of a mathematical vector e.g. a position or velocity
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct Vector2<T>(pub T, pub T);
 
 use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::convert::From;
 
-impl Vector2{
-    /// Creates a new `Vector2` instance
-    pub fn new(x: f32, y: f32) -> Self{
-        Vector2{
-            x: x,
-            y: y,
-        }
-    }
-    /// Creates a new unit `Vector2` in a direction in radians
-    pub fn unit_vector(direction: f32) -> Self{
-        let (y, x) = direction.sin_cos();
-        Self::new(x, y)
-    }
-    /// Returns the x field
-    pub fn get_x(&self) -> f32{
-        self.x
-    }
-    /// Returns the y field
-    pub fn get_y(&self) -> f32{
-        self.y
-    }
-    /// Returns the x and y fields as a tuple
-    pub fn get_x_y(&self) -> (f32, f32){
-        (self.x, self.y)
-    }
-    /// Returns the distance betweens two vectors squared
-    pub fn distance_sq(&self, other: &Self) -> f32{
-        (self.x - other.x).hypot(self.y - other.y)
-    }
-    /// Returns the magnitude or the length of the vector
-    pub fn length(&self) -> f32{
-        self.x.hypot(self.y)
-    }
-    /// Returns the magnitude or the length of the vector squared
-    pub fn length_sq(&self) -> f32{
-        self.x * self.x + self.y * self.y
-    }
-    /// Returns direction the vector is pointing in radians
-    pub fn get_direction(&self) -> f32{
-        self.y.atan2(self.x)
-    }
+/// Special methods for floating point vectors
+pub trait FloatVector<F>{
+    /// Creates a new unit vector in a specific direction
+    fn unit_vector(F) -> Self;
     /// Normalises the vector
-    pub fn normalise(self) -> Self{
-        let length = self.length();
-        self / length
+    fn normalise(self) -> Self;
+    /// Returns the magnitude or the length of the vector
+    fn length(&self) -> F;
+    /// Returns direction the vector is pointing
+    fn direction(&self) -> F;
+    /// Returns direction towards another vector
+    fn direction_to(&self, &Self) -> F;
+    /// Returns the distance betweens two vectors
+    fn distance_to(&self, &Self) -> F;
+}
+
+macro_rules! impl_for {
+    ($($t:ty)*) => {$(
+        impl FloatVector<$t> for Vector2<$t>{
+            fn unit_vector(direction: $t) -> Self{
+                let (y, x) = direction.sin_cos();
+                Vector2(x, -y)
+            }
+
+            fn normalise(self) -> Self{
+                let length = self.length();
+                self / length
+            }
+
+            fn length(&self) -> $t{
+                self.0.hypot(self.1)
+            }
+
+            fn direction(&self) -> $t{
+                (-self.1).atan2(self.0)
+            }
+
+            fn direction_to(&self, other: &Self) -> $t{
+                (*other-*self).direction()
+            }
+
+            fn distance_to(&self, other: &Self) -> $t{
+                (self.0 - other.0).hypot(self.1 - other.1)
+            }
+        }
+
+        impl Mul<Vector2<$t>> for $t{
+            type Output = Vector2<$t>;
+
+            fn mul(self, rhs: Vector2<$t>) -> Vector2<$t>{
+                Vector2(self * rhs.0, self * rhs.1)
+            }
+        }
+
+        impl Div<Vector2<$t>> for $t{
+            type Output = Vector2<$t>;
+
+            fn div(self, rhs: Vector2<$t>) -> Vector2<$t>{
+                Vector2(self / rhs.0, self / rhs.1)
+            }
+        }
+    )*};
+}
+
+impl_for!(f32 f64);
+
+impl<T> Vector2<T> {
+    /// Returns the dot product of two vectors
+    pub fn dot(self, other: Self) -> T where T: Mul<Output=T> + Add<Output=T>{
+        self.0 * other.0 + self.1 * other.1
     }
-    /// Returns direction towards an other vector
-    pub fn get_direction_towards(&self, other: &Self) -> f32{
-        (other.y-self.y).atan2(other.x-self.x)
+    /// Returns the fields in a tuple
+    pub fn to_tuple(self) -> (T, T){
+        (self.0, self.1)
     }
-    /// Returns the dot product of the vectors
-    pub fn dot(self, other: Self) -> f32{
-        self.x * other.x + self.y * other.y
-    }
-    /// To float array
-    pub fn to_array(self) -> [f32; 2]{
-        [self.x, self.y]
+    /// Returns an array of the two fields
+    pub fn to_array(self) -> [T; 2]{
+        [self.0, self.1]
     }
 }
 
-impl Add for Vector2{
-    type Output = Vector2;
+impl<T: Add<Output=T>> Add for Vector2<T>{
+    type Output = Self;
 
-    fn add(self, rhs: Vector2) -> Vector2{
-        Vector2::new(self.x + rhs.x, self.y + rhs.y)
+    fn add(self, rhs: Self) -> Self{
+        Vector2(self.0 + rhs.0, self.1 + rhs.1)
     }
 }
 
-impl Sub for Vector2{
-    type Output = Vector2;
+impl<T: Sub<Output=T>> Sub for Vector2<T>{
+    type Output = Self;
 
-    fn sub(self, rhs: Vector2) -> Vector2{
-        Vector2::new(self.x - rhs.x, self.y - rhs.y)
+    fn sub(self, rhs: Self) -> Self{
+        Vector2(self.0 - rhs.0, self.1 - rhs.1)
     }
 }
 
-impl Mul<Vector2> for f32{
-    type Output = Vector2;
+impl<T: Mul<Output=T> + Copy> Mul<T> for Vector2<T>{
+    type Output = Self;
 
-    fn mul(self, rhs: Vector2) -> Vector2{
-        Vector2::new(self * rhs.x, self * rhs.y)
+    fn mul(self, rhs: T) -> Self{
+        Vector2(self.0 * rhs, self.1 * rhs)
     }
 }
 
-impl Mul<f32> for Vector2{
-    type Output = Vector2;
+impl<T: Div<Output=T> + Copy> Div<T> for Vector2<T>{
+    type Output = Self;
 
-    fn mul(self, rhs: f32) -> Vector2{
-        Vector2::new(self.x * rhs, self.y * rhs)
+    fn div(self, rhs: T) -> Self{
+        Vector2(self.0/rhs, self.1/rhs)
     }
 }
 
-impl Div<f32> for Vector2{
-    type Output = Vector2;
+impl<T: Neg<Output=T>> Neg for Vector2<T>{
+    type Output = Self;
 
-    fn div(self, rhs: f32) -> Vector2{
-        Vector2::new(self.x/rhs, self.y/rhs)
+    fn neg(self) -> Self{
+        Vector2(-self.0, -self.1)
     }
 }
 
-impl Div<Vector2> for f32{
-    type Output = Vector2;
-
-    fn div(self, rhs: Vector2) -> Vector2{
-        Vector2::new(self / rhs.x, self / rhs.y)
+impl<T> Into<(T, T)> for Vector2<T>{
+    #[inline(always)]
+    fn into(self) -> (T, T){
+        self.to_tuple()
     }
 }
 
-impl Neg for Vector2{
-    type Output = Vector2;
-
-    fn neg(self) -> Vector2{
-        Vector2::new(-self.x, -self.y)
-    }
-}
-
-impl From<(f32, f32)> for Vector2{
-    fn from(tuple: (f32, f32)) -> Self{
-        Vector2::new(tuple.0, tuple.1)
+impl<T> From<(T, T)> for Vector2<T>{
+    #[inline(always)]
+    fn from(tuple: (T, T)) -> Self{
+        Vector2(tuple.0, tuple.1)
     }
 }
