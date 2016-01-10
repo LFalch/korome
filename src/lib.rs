@@ -31,7 +31,7 @@ use std::error::Error;
 use std::collections::HashSet;
 
 /// Current engine version
-pub const VERSION: &'static str = include_str!("../version.txt");
+pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/version"));
 
 /// Convenient `Result` type for `KoromeError`
 pub type Result<T> = std::result::Result<T, KoromeError>;
