@@ -37,7 +37,7 @@ impl<'a> Object<'a>{
 
 impl<'a> Drawable for Object<'a>{
     fn get_pos(&self) -> (f32, f32){
-        self.pos.get_x_y()
+        self.pos.into()
     }
 
     fn get_rotation(&self) -> f32{
