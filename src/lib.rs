@@ -144,26 +144,35 @@ macro_rules! is_down{
     }}
 }
 
-/// A trait for the functions a `Game` would need in its loop
-pub trait GameLogic {
-    /// A function that runs all the logic of the game
-    fn logic (&mut self, LogicArgs);
-    /// A function that handles the rendering
-    fn render(&self, RenderArgs);
-}
-
 /// A struct to keep your "game" in
-pub struct Game<'a, G: GameLogic> {
-    g: G,
-    draw: Draw<'a>,
+pub struct Game<'a, S, L: FnMut(&mut S, LogicArgs), R: Fn(&S, RenderArgs)> {
+    /// An object that will parsed into the logic and render methods
+    pub shared: S,
+    logic : L,
+    render: R,
+    draw  : Draw<'a>,
 }
 
-impl<'a, G: GameLogic> Game<'a, G> {
-    /// Creates a new `Game` with a `Draw` and `GameLogic`
-    pub fn new(game_logic: G, draw: Draw<'a>) -> Self{
+impl<'a, L: FnMut(&mut (), LogicArgs), R: Fn(&(), RenderArgs)> Game<'a, (), L, R>{
+    /// Creates a new `Game` with a `Draw` and two closures
+    pub fn new(draw: Draw<'a>, logic: L, render: R) -> Self{
         Game{
-            g   : game_logic,
-            draw: draw,
+            shared: (),
+            logic : logic,
+            render: render,
+            draw  : draw,
+        }
+    }
+}
+
+impl<'a, S, L: FnMut(&mut S, LogicArgs), R: Fn(&S, RenderArgs)> Game<'a, S, L, R> {
+    /// Creates a new `Game` with a `Draw`, a shared value, and two closures
+    pub fn with_shared(draw: Draw<'a>, shared: S, logic: L, render: R) -> Self{
+        Game{
+            shared: shared,
+            logic : logic,
+            render: render,
+            draw  : draw,
         }
     }
     /// Runs the `Game` until the window is closed
@@ -203,7 +212,7 @@ impl<'a, G: GameLogic> Game<'a, G> {
 
             last = now;
 
-            self.g.logic(LogicArgs{
+            (self.logic)(&mut self.shared, LogicArgs{
                 delta    :  delta,
                 keyevents: &keys,
                 down_keys: &down_keys,
@@ -214,7 +223,7 @@ impl<'a, G: GameLogic> Game<'a, G> {
             let mut target = self.draw.get_display().draw();
             target.clear_color(0.0, 0.0, 1.0, 1.0);
 
-            self.g.render(RenderArgs{
+            (self.render)(&self.shared, RenderArgs{
                 target: &mut target,
                 draw  : &self.draw
             });

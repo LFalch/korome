@@ -2,7 +2,7 @@ extern crate glium;
 #[macro_use]
 extern crate korome;
 
-use korome::{Game, Draw, GameLogic, LogicArgs, RenderArgs, Vector2};
+use korome::{Game, Draw, LogicArgs, RenderArgs, Vector2};
 use korome::draw::{Drawable, Texture};
 
 fn main() {
@@ -10,11 +10,11 @@ fn main() {
 
     let planet = draw.load_texture_from_bytes(include_bytes!("planet.png"), 64, 64).unwrap();
 
-    let mut logic = Logic::new();
+    let mut objs = Vec::new();
 
-    logic.add_object(Object::new(&planet, (-400., 300.), 0.));
+    objs.push(Object::new(&planet, -400., 300., 0.));
 
-    let game = Game::new(logic, draw);
+    let game = Game::with_shared(draw, objs, logic, render);
 
     game.run_until_closed();
 }
@@ -26,10 +26,10 @@ struct Object<'a>{
 }
 
 impl<'a> Object<'a>{
-    fn new<V: Into<Vector2<f32>>>(tex: &'a Texture, pos: V, theta: f32) -> Self{
+    fn new(tex: &'a Texture, x: f32, y: f32, theta: f32) -> Self{
         Object{
             tex: tex,
-            pos: pos.into(),
+            pos: Vector2(x, y),
             theta: theta,
         }
     }
@@ -49,60 +49,42 @@ impl<'a> Drawable for Object<'a>{
     }
 }
 
-struct Logic<'a> {
-    objects: Vec<Object<'a>>,
-}
+fn logic(objs: &mut Vec<Object>, l_args: LogicArgs){
+    let ref mut planet = objs[0];
 
-impl<'a> Logic<'a>{
-    pub fn new() -> Self{
-        Logic{
-            objects: Vec::new(),
+    let delta = l_args.delta as f32;
+
+    let vel = 200.0 * delta;
+    let pos = &mut planet.pos;
+
+    is_down!{
+        l_args;
+
+        Left, A => {
+            pos.0 -= vel
+        },
+        Right, D => {
+            pos.0 += vel
+        },
+        Down , S => {
+            pos.1 -= vel
+        },
+        Up   , W => {
+            pos.1 += vel
+        },
+        E => {
+            planet.theta += delta
+        },
+        Q => {
+            planet.theta -= delta
         }
     }
-
-    pub fn add_object(&mut self, obj: Object<'a>){
-        self.objects.push(obj)
-    }
 }
 
-impl<'a> GameLogic for Logic<'a> {
-    fn logic (&mut self, l_args: LogicArgs){
-        let ref mut planet = self.objects[0];
-
-        let delta = l_args.delta as f32;
-
-        let vel = 200.0 * delta;
-        let pos = &mut planet.pos;
-
-        is_down!{
-            l_args;
-
-            Left, A => {
-                pos.0 -= vel
-            },
-            Right, D => {
-                pos.0 += vel
-            },
-            Down , S => {
-                pos.1 -= vel
-            },
-            Up   , W => {
-                pos.1 += vel
-            },
-            E => {
-                planet.theta += delta
-            },
-            Q => {
-                planet.theta -= delta
-            }
-        }
-    }
-
-    fn render(&self, mut r_args: RenderArgs){
-        //.rotate() doesn't actually work properly right now
-        r_args.draw_drawables()
-            .add_vec(&self.objects)
-            .draw()
-            .unwrap_or_else(|e| panic!("{}", e))
-    }
+fn render(objs: &Vec<Object>, mut r_args: RenderArgs){
+    //.rotate() doesn't actually work properly right now
+    r_args.draw_drawables()
+        .add_vec(objs)
+        .draw()
+        .unwrap_or_else(|e| panic!("{}", e))
 }
