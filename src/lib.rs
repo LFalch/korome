@@ -80,7 +80,7 @@ pub struct LogicArgs<'a>{
     pub mousepos : (i32, i32),
     /// A vector of all key events that happened
     pub keyevents: &'a [(bool, VirtualKeyCode)],
-    
+
     /// A `HashSet` of all keys that are pressed down
     down_keys: &'a HashSet<VirtualKeyCode>
 }
@@ -94,21 +94,15 @@ impl<'a> LogicArgs<'a>{
 
 /// Wraps everything needed to render together
 pub struct RenderArgs<'a>{
-    target: &'a mut glium::Frame,
-    draw  : &'a Draw<'a>
+    /// Object used to draw on the buffer.
+    /// Generally, you shouldn't have to access this directly.
+    pub target: &'a mut glium::Frame,
+    /// Reference to the `Draw` instance
+    /// Generally, you shouldn't have to access this directly.
+    pub draw  : &'a Draw<'a>
 }
 
 impl<'a> RenderArgs<'a>{
-    /// Returns the `glium::Frame` object, used to draw on the buffer
-    pub fn get_target(&'a mut self) -> &'a mut glium::Frame {
-        self.target
-    }
-
-    /// Returns the `Draw` instance
-    pub fn get_draw(&mut self) -> &'a Draw {
-        self.draw
-    }
-
     /// Returns a `DrawablesDrawer` for drawing `Drawable`s to the screen
     pub fn draw_drawables<D: Drawable>(&mut self) -> DrawablesDrawer<D>{
         self.draw.draw_drawables(self.target)
