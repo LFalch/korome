@@ -75,31 +75,17 @@ quick_error! {
 #[derive(Debug)]
 pub struct LogicArgs<'a>{
     /// The delta time since last frame
-    delta    : f64,
-    /// A vector of all key events that happened
-    keyevents: &'a [(bool, VirtualKeyCode)],
-    /// A `HashSet` of all keys that are pressed down
-    down_keys: &'a HashSet<VirtualKeyCode>,
+    pub delta    : f64,
     /// The current position of the mouse
-    mousepos : (i32, i32)
+    pub mousepos : (i32, i32),
+    /// A vector of all key events that happened
+    pub keyevents: &'a [(bool, VirtualKeyCode)],
+    
+    /// A `HashSet` of all keys that are pressed down
+    down_keys: &'a HashSet<VirtualKeyCode>
 }
 
 impl<'a> LogicArgs<'a>{
-    /// Returns the delta time
-    pub fn delta(&self) -> f64{
-        self.delta
-    }
-
-    /// Returns the slice of key events
-    pub fn keyevents(&self) -> &[(bool, VirtualKeyCode)]{
-        self.keyevents
-    }
-
-    /// Returns the mouse position
-    pub fn mousepos(&self) -> (i32, i32){
-        self.mousepos
-    }
-
     /// Checks whether a key is pressed down
     pub fn is_down(&self, key: &VirtualKeyCode) -> bool{
         self.down_keys.contains(key)

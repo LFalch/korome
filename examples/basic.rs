@@ -69,7 +69,7 @@ impl<'a> GameLogic for Logic<'a> {
     fn logic (&mut self, l_args: LogicArgs){
         let ref mut planet = self.objects[0];
 
-        let delta = l_args.delta() as f32;
+        let delta = l_args.delta as f32;
 
         let vel = 200.0 * delta;
         let pos = &mut planet.pos;
