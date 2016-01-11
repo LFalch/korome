@@ -22,10 +22,11 @@ struct Vertex {
 implement_vertex!(Vertex, position, tex_coords);
 
 impl Vertex{
-    fn new(position: (f32, f32), tex_coords: (f32, f32)) -> Self{
+    #[inline]
+    fn new(position: [f32; 2], tex_coords: [f32; 2]) -> Self{
         Vertex{
-            position  : [ position .0,  position .1],
-            tex_coords: [tex_coords.0, tex_coords.1]
+            position  : position,
+            tex_coords: tex_coords,
          }
     }
 }
@@ -52,10 +53,10 @@ impl Texture {
 
         let (w, h) = (width as f32 / 2.0, height as f32 / 2.0);
 
-        let v1 = Vertex::new((-w, -h), (0.0, 0.0));
-        let v2 = Vertex::new(( w, -h), (1.0, 0.0));
-        let v3 = Vertex::new(( w,  h), (1.0, 1.0));
-        let v4 = Vertex::new((-w,  h), (0.0, 1.0));
+        let v1 = Vertex::new([-w, -h], [0.0, 0.0]);
+        let v2 = Vertex::new([ w, -h], [1.0, 0.0]);
+        let v3 = Vertex::new([ w,  h], [1.0, 1.0]);
+        let v4 = Vertex::new([-w,  h], [0.0, 1.0]);
 
         Ok(Texture {
             tex: try!(Texture2d::new(display, image)),
@@ -222,7 +223,7 @@ impl<'a, D: Drawable> DrawablesDrawer<'a, D>{
 
     /// Adds an `Iterator` of `Drawable`s to be drawn
     pub fn add_vec<I: IntoIterator<Item = &'a D>>(mut self, drawables: I) -> Self{
-        for d in drawables.into_iter(){
+        for d in drawables{
             self = self.add(d);
         }
 
@@ -275,16 +276,16 @@ impl<'a> TextureDrawer<'a> {
 
     /// Finally draws the texture
     pub fn draw(self, frame: &mut glium::Frame, draw: &Draw) -> Result<()>{
-        let rotation    = self.rotation;
-        let translation = self.translation;
+        let (sin, cos)  = self.rotation.sin_cos();
+        let (x, y) = self.translation;
 
         let uniforms = uniform! {
             tex   : &self.texture.tex,
             matrix: [
-                [rotation.cos(), -rotation.sin(), 0.0, 0.0],
-                [rotation.sin(),  rotation.cos(), 0.0, 0.0],
-                [           0.0,             0.0, 1.0, 0.0],
-                [ translation.0,   translation.1, 0.0, 1.0],
+                [cos, -sin, 0.0, 0.0],
+                [sin,  cos, 0.0, 0.0],
+                [0.0,  0.0, 1.0, 0.0],
+                [  x,    y, 0.0, 1.0],
             ],
         };
 
