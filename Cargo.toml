@@ -1,6 +1,6 @@
 [package]
 name = "korome"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["LFalch <lucas@wasd.dk>"]
 build = "build.rs"
 

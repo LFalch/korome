@@ -223,26 +223,23 @@ impl<'a, G: GameLogic> Game<'a, G> {
 
             last = now;
 
-            self.render();
             self.g.logic(LogicArgs{
                 delta    :  delta,
                 keyevents: &keys,
                 down_keys: &down_keys,
                 mousepos :  mousepos
             });
+
+            // Do rendering
+            let mut target = self.draw.get_display().draw();
+            target.clear_color(0.0, 0.0, 1.0, 1.0);
+
+            self.g.render(RenderArgs{
+                target: &mut target,
+                draw  : &self.draw
+            });
+
+            target.finish().unwrap()
         }
-    }
-
-    // A function for handling the the rendering initialisation and then do the rendering
-    fn render(&self){
-        let mut target = self.draw.get_display().draw();
-        target.clear_color(0.0, 0.0, 1.0, 1.0);
-
-        self.g.render(RenderArgs{
-            target: &mut target,
-            draw  : &self.draw
-        });
-
-        target.finish().unwrap()
     }
 }
