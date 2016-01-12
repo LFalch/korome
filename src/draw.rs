@@ -72,15 +72,6 @@ impl Texture {
 
         Self::new(display, &bytes, width, height)
     }
-
-    /// Returns a `TextureDrawer` to draw the `Texture1`
-    pub fn drawer(&self) -> TextureDrawer{
-        TextureDrawer{
-            texture: &self,
-            rotation   : 0.0,
-            translation: (0.0, 0.0),
-        }
-    }
 }
 
 #[macro_export]
@@ -114,9 +105,10 @@ pub trait Drawable {
 pub struct Draw<'a> {
     display: GlutinFacade,
     program: Program,
-    indices: NoIndices,
     params : DrawParameters<'a>
 }
+
+const INDICES: NoIndices = NoIndices(glium::index::PrimitiveType::TrianglesList);
 
 impl<'a> Draw<'a> {
     /// Creates a new `Draw` from a `Display` made using the arguments
@@ -175,7 +167,6 @@ impl<'a> Draw<'a> {
 
         Draw{
             program: Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap(),
-            indices: NoIndices(glium::index::PrimitiveType::TrianglesList),
             display: display,
             params : params,
             // halfsize: (w, h),
@@ -192,97 +183,26 @@ impl<'a> Draw<'a> {
         Texture::new_from_file(&self.display, &format!("{}.png", identifier), width, height)
     }
 
-    /// Returns a `DrawablesDrawer` for drawing `Drawable`s to the screen
-    pub fn draw_drawables<D: Drawable>(&'a self, target: &'a mut glium::Frame) -> DrawablesDrawer<D>{
-        DrawablesDrawer{
-            drawables: Vec::new(),
-            target: target,
-            draw: self
-        }
-    }
-
-    /// Returns the inner `GlutinFacade`
-    pub fn get_display(&self) -> &GlutinFacade {
-        &self.display
-    }
-}
-
-/// An interface for drawing `Drawable`s on the screen
-#[must_use = "`DrawablesDrawer` does nothing until drawn"]
-pub struct DrawablesDrawer<'a, D: 'a + Drawable>{
-    drawables: Vec<&'a D>,
-    target: &'a mut glium::Frame,
-    draw  : &'a Draw<'a>
-}
-
-impl<'a, D: Drawable> DrawablesDrawer<'a, D>{
-    /// Adds another `Drawble` to be drawn
-    pub fn add(mut self, drawable: &'a D) -> Self{
-        self.drawables.push(drawable);
-
-        self
-    }
-
-    /// Adds an `Iterator` of `Drawable`s to be drawn
-    pub fn add_vec<I: IntoIterator<Item = &'a D>>(mut self, drawables: I) -> Self{
-        for d in drawables{
-            self = self.add(d);
-        }
-
-        self
-    }
-
-    /// Finally draws the `Drawable`s
-    pub fn draw(self) -> Result<()>{
-        for drawable in self.drawables{
+    /// Draws an iterator of `Drawable`s onto the screen
+    pub fn draw_drawables<'d, D: 'd + Drawable, I: IntoIterator<Item = &'d D>>(&self, target: &mut glium::Frame, drawables: I) -> Result<()>{
+        for drawable in drawables{
             let (x, y) = drawable.get_pos();
 
             try!(
-                drawable.get_texture().drawer()
-                    .rotate(drawable.get_rotation())
-                    .translate(x, y)
-                    .draw(self.target, self.draw)
+                self.draw_texture(target, drawable.get_texture(),
+                    drawable.get_rotation(), x, y)
             );
         }
 
         Ok(())
     }
-}
 
-/// An interface for drawing a texture on the screen
-#[must_use = "`TextureDrawer` does nothing until drawn"]
-pub struct TextureDrawer<'a> {
-    translation: (f32, f32),
-    rotation   :  f32,
-    texture: &'a Texture,
-}
-
-impl<'a> TextureDrawer<'a> {
-    /// Rotates the texture
-    pub fn rotate(self, rotation: f32) -> TextureDrawer<'a> {
-        TextureDrawer{
-            rotation: rotation,
-            ..
-            self
-        }
-    }
-
-    /// Translates the texture
-    pub fn translate(self, translate_x: f32, translate_y: f32) -> TextureDrawer<'a> {
-        TextureDrawer{
-            translation: (translate_x, translate_y),
-            ..
-            self
-        }
-    }
-
-    /// Finally draws the texture
-    pub fn draw(self, frame: &mut glium::Frame, draw: &Draw) -> Result<()>{
-        let (sin, cos)  = self.rotation.sin_cos();
-        let (x, y) = self.translation;
+    /// Draws a texture onto the screen
+    pub fn draw_texture(&self, target: &mut glium::Frame, texture: &Texture, rotation: f32, x: f32, y: f32) -> Result<()>{
+        let (sin, cos)  = rotation.sin_cos();
 
         let uniforms = uniform! {
-            tex   : &self.texture.tex,
+            tex   : &texture.tex,
             matrix: [
                 [cos, -sin, 0.0, 0.0],
                 [sin,  cos, 0.0, 0.0],
@@ -291,10 +211,15 @@ impl<'a> TextureDrawer<'a> {
             ],
         };
 
-        for vertex_buffer in &self.texture.vertex_buffers{
-            try!(frame.draw(vertex_buffer, &draw.indices, &draw.program, &uniforms, &draw.params));
+        for vertex_buffer in &texture.vertex_buffers{
+            try!(target.draw(vertex_buffer, INDICES, &self.program, &uniforms, &self.params));
         }
 
         Ok(())
+    }
+
+    /// Returns the inner `GlutinFacade`
+    pub fn get_display(&self) -> &GlutinFacade {
+        &self.display
     }
 }

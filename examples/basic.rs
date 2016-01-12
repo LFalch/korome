@@ -2,13 +2,12 @@ extern crate glium;
 #[macro_use]
 extern crate korome;
 
-use korome::{Game, Draw, LogicArgs, RenderArgs, Vector2};
-use korome::draw::{Drawable, Texture};
+use korome::*;
 
 fn main() {
-    let draw = Draw::new("glium works!", 800, 600);
+    let draw = Draw::new("korome works!", 800, 600);
 
-    let planet = draw.load_texture_from_bytes(include_bytes!("planet.png"), 64, 64).unwrap();
+    let planet = include_texture!(draw, "planet.png", 64, 64).unwrap();
 
     let mut objs = Vec::new();
 
@@ -83,8 +82,6 @@ fn logic(objs: &mut Vec<Object>, l_args: LogicArgs){
 
 fn render(objs: &Vec<Object>, mut r_args: RenderArgs){
     //.rotate() doesn't actually work properly right now
-    r_args.draw_drawables()
-        .add_vec(objs)
-        .draw()
+    r_args.draw_drawables(objs)
         .unwrap_or_else(|e| panic!("{}", e))
 }

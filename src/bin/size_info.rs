@@ -2,7 +2,6 @@ extern crate korome;
 extern crate glium;
 
 use korome::*;
-use korome::draw::{Texture, TextureDrawer};
 
 use glium::texture::Texture2d;
 
@@ -14,10 +13,13 @@ macro_rules! print_type_info{
             use std::mem::{align_of, size_of};
 
             let (size, align) = (size_of::<$t>(), align_of::<$t>());
-            println!("{}\t: {} === {} * {}", stringify!($t), size, size/align, align);
+            println!("{}\t: {} <= {} * {}", stringify!($t), size, size/align, align);
         })*
     }
 }
+
+type LogicFn = fn(&mut(), LogicArgs);
+type RenderFn = fn(&(), RenderArgs);
 
 fn main(){
     println!("Version: {}", korome::VERSION);
@@ -32,6 +34,8 @@ fn main(){
         Vector2<f32>
         Vector2<f64>
         GlutinFacade
-        TextureDrawer
+        fn(&(), RenderArgs)
+        fn(&mut (), LogicArgs)
+        Game<(), LogicFn, RenderFn>
     );
 }
