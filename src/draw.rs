@@ -73,11 +73,6 @@ impl Texture {
         Self::new(display, &bytes, width, height)
     }
 
-    /// Gets the array of `VertexBuffer`s
-    fn get_vertex_bufffers(&self) -> &VertexBuffers {
-        &self.vertex_buffers
-    }
-
     /// Returns a `TextureDrawer` to draw the `Texture1`
     pub fn drawer(&self) -> TextureDrawer{
         TextureDrawer{
@@ -86,6 +81,13 @@ impl Texture {
             translation: (0.0, 0.0),
         }
     }
+}
+
+#[macro_export]
+macro_rules! include_texture {
+    ($draw:expr, $texture:tt, $w:expr, $h:expr) => {
+        $draw.load_texture_from_bytes(include_bytes!($texture), $w, $h)
+    };
 }
 
 /*
@@ -289,7 +291,7 @@ impl<'a> TextureDrawer<'a> {
             ],
         };
 
-        for vertex_buffer in self.texture.get_vertex_bufffers(){
+        for vertex_buffer in &self.texture.vertex_buffers{
             try!(frame.draw(vertex_buffer, &draw.indices, &draw.program, &uniforms, &draw.params));
         }
 
