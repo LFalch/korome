@@ -3,7 +3,7 @@ extern crate time;
 
 use std::collections::HashSet;
 
-use super::{Result, Draw, Drawable, Texture};
+use super::{Result, Draw, Texture};
 use time::precise_time_s as time_s;
 
 use glium::{Frame, Surface};
@@ -114,21 +114,40 @@ pub struct RenderArgs<'a>{
     /// Object used to draw on the buffer.
     /// Generally, you shouldn't have to access this directly.
     pub target: &'a mut glium::Frame,
-    /// Reference to the `Draw` instance
+    /// Reference to the `Draw` instance.
     /// Generally, you shouldn't have to access this directly.
     pub draw  : &'a Draw<'a>
 }
 
 impl<'a> RenderArgs<'a>{
-    /// Uses `Draw` to draw an iterator of `Drawable`s onto the screen
-    pub fn draw_drawables<'d, D: 'd + Drawable, I: IntoIterator<Item = &'d D>>(&mut self, drawables: I) -> Result<()>{
-        self.draw.draw_drawables(self.target, drawables)
-    }
-
     /// Uses `Draw` to draw a texture onto the screen
     pub fn draw_texture(&mut self, texture: &Texture, rotation: f32, x: f32, y: f32) -> Result<()>{
         self.draw.draw_texture(self.target, texture, rotation, x, y)
     }
+
+    /// Draws an iterator of `Sprite`s onto the screen
+    pub fn draw_sprites<'b, D: 'b + Sprite, I: IntoIterator<Item = &'b D>>(&mut self, sprites: I) -> Result<()>{
+        for sprite in sprites{
+            let (x, y) = sprite.get_pos();
+
+            try!(
+                self.draw_texture(sprite.get_texture(),
+                sprite.get_rotation(), x, y)
+            );
+        }
+
+        Ok(())
+    }
+}
+
+/// Descibes objects that can be drawn to the screen
+pub trait Sprite {
+    /// Returns the position on the screen it should be drawn
+    fn get_pos(&self) -> (f32, f32);
+    /// Returns the rotation it should be drawn with
+    fn get_rotation(&self) -> f32;
+    /// Returns the `Texture`
+    fn get_texture(&self) -> &Texture;
 }
 
 /// Macro for easily doing things if particular keys are down

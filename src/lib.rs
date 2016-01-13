@@ -14,8 +14,8 @@ mod game;
 mod vector;
 mod settings;
 
-pub use draw::{Draw, Texture, Drawable};
-pub use game::{Game, LogicArgs, RenderArgs};
+pub use draw::{Draw, Texture};
+pub use game::{Game, Sprite, LogicArgs, RenderArgs};
 pub use vector::{Vector2, FloatVector};
 pub use settings::Settings;
 

@@ -1,8 +1,6 @@
 extern crate glium;
 extern crate image;
 
-use std::collections::HashMap;
-
 use glium::{DisplayBuild, VertexBuffer, Program, DrawParameters, Surface};
 use glium::backend::glutin_backend::GlutinFacade;
 use glium::texture::Texture2d;
@@ -82,26 +80,6 @@ macro_rules! include_texture {
     };
 }
 
-/*
-const INDENTIY_MATRIX: [[f32; 4]; 4] = [
-    [1.0, 0.0, 0.0, 0.0],
-    [0.0, 1.0, 0.0, 0.0],
-    [0.0, 0.0, 1.0, 0.0],
-    [0.0, 0.0, 0.0, 1.0]];
-*/
-
-type Textures<'a> = HashMap<&'a str, Texture>;
-
-/// Trait for objects that can be drawn to the screen
-pub trait Drawable {
-    /// Returns the position on the screen it should be drawn
-    fn get_pos(&self) -> (f32, f32);
-    /// Returns the rotation it should be drawn with
-    fn get_rotation(&self) -> f32;
-    /// Returns the `Texture`
-    fn get_texture(&self) -> &Texture;
-}
-
 /// Functionality for rendering
 pub struct Draw<'a> {
     display: GlutinFacade,
@@ -114,7 +92,7 @@ const INDICES: NoIndices = NoIndices(glium::index::PrimitiveType::TrianglesList)
 impl<'a> Draw<'a> {
     /// Creates a new `Draw` from a `Display` made using the arguments
     pub fn new(title: &str, width: u32, height: u32) -> Draw<'a> {
-        Self::new_from_display(
+        Self::from_display(
             glium::glutin::WindowBuilder::new()
                 .with_title(title.to_string())
                 .with_dimensions(width, height)
@@ -124,7 +102,7 @@ impl<'a> Draw<'a> {
     }
 
     /// Creates a new `Draw` instance using the given display
-    pub fn new_from_display(display: GlutinFacade) -> Draw<'a> {
+    pub fn from_display(display: GlutinFacade) -> Draw<'a> {
         let (w, h) = display.get_window().unwrap().get_inner_size().unwrap();
         let (w, h) = (w as f32 / 2.0, h as f32 / 2.0);
 
@@ -182,20 +160,6 @@ impl<'a> Draw<'a> {
     /// Returns a `Texture` created from a file
     pub fn load_texture(&self, identifier: &'a str, width: u32, height: u32) -> Result<Texture> {
         Texture::new_from_file(&self.display, &format!("{}.png", identifier), width, height)
-    }
-
-    /// Draws an iterator of `Drawable`s onto the screen
-    pub fn draw_drawables<'d, D: 'd + Drawable, I: IntoIterator<Item = &'d D>>(&self, target: &mut glium::Frame, drawables: I) -> Result<()>{
-        for drawable in drawables{
-            let (x, y) = drawable.get_pos();
-
-            try!(
-                self.draw_texture(target, drawable.get_texture(),
-                    drawable.get_rotation(), x, y)
-            );
-        }
-
-        Ok(())
     }
 
     /// Draws a texture onto the screen

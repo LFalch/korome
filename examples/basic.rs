@@ -34,7 +34,7 @@ impl<'a> Object<'a>{
     }
 }
 
-impl<'a> Drawable for Object<'a>{
+impl<'a> Sprite for Object<'a>{
     fn get_pos(&self) -> (f32, f32){
         self.pos.into()
     }
@@ -82,6 +82,6 @@ fn logic(objs: &mut Vec<Object>, l_args: LogicArgs){
 
 fn render(objs: &Vec<Object>, mut r_args: RenderArgs){
     //.rotate() doesn't actually work properly right now
-    r_args.draw_drawables(objs)
+    r_args.draw_sprites(objs)
         .unwrap_or_else(|e| panic!("{}", e))
 }
