@@ -1,7 +1,7 @@
 extern crate korome;
 extern crate glium;
 
-use korome::{Draw, Vector2, Game, Settings, LogicArgs, RenderArgs, GameLogic};
+use korome::{Draw, Vector2, Game, LogicArgs, RenderArgs, GameLogic};
 use korome::draw::{Texture, TextureDrawer};
 
 use glium::texture::Texture2d;
@@ -22,7 +22,7 @@ macro_rules! print_type_info{
 fn main(){
     println!("Version: {}", korome::VERSION);
 
-    print_type_info!(Logic, Draw, Texture, Vector2<f32>, Vector2<f64>, Game<Logic>, LogicArgs, RenderArgs, Settings, Texture2d, TextureDrawer, GlutinFacade);
+    print_type_info!(Logic, Draw, Texture, Vector2<f32>, Vector2<f64>, Game<Logic>, LogicArgs, RenderArgs, Texture2d, TextureDrawer, GlutinFacade);
 }
 
 struct Logic;

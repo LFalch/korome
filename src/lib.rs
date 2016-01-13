@@ -13,11 +13,9 @@ extern crate quick_error;
 pub mod draw;
 
 mod vector;
-mod settings;
 
 pub use draw::Draw;
 pub use vector::{Vector2, FloatVector};
-pub use settings::Settings;
 
 use draw::{Drawable, DrawablesDrawer};
 
