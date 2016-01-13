@@ -27,7 +27,6 @@ fn main(){
     print_type_info!(
         Draw
         Texture
-        Settings
         Texture2d
         LogicArgs
         RenderArgs

@@ -5,19 +5,16 @@
 extern crate glium;
 extern crate time;
 extern crate image;
-extern crate toml;
 #[macro_use]
 extern crate quick_error;
 
 mod draw;
 mod game;
 mod vector;
-mod settings;
 
 pub use draw::{Draw, Texture};
 pub use game::{Game, Sprite, LogicArgs, RenderArgs};
 pub use vector::{Vector2, FloatVector};
-pub use settings::Settings;
 
 /// Current engine version
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/version"));
