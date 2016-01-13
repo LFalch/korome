@@ -88,7 +88,7 @@ impl<'a, S, L, R> Game<'a, S, L, R> where L: FnMut(&mut S, LogicArgs), R: FnMut(
     }
 }
 
-/// Wraps all useful info about what has happened (e.g. events) together
+/// Wraps together useful data about what has happened (e.g. events)
 #[derive(Debug)]
 pub struct LogicArgs<'a>{
     /// The time that has passed since last update
@@ -109,7 +109,8 @@ impl<'a> LogicArgs<'a>{
     }
 }
 
-/// Wraps together everything needed to render
+/// Wraps together everything needed to render and
+/// also provides functions for actually drawing
 pub struct RenderArgs<'a>{
     /// Object used to draw on the buffer.
     /// Generally, you shouldn't have to access this directly.

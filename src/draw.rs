@@ -31,7 +31,7 @@ impl Vertex{
 
 type VertexBuffers = [VertexBuffer<Vertex>; 2];
 
-/// Struct for storing a 2D texture
+/// A 2D texture that is ready to be drawn
 // NOTE Size: 1 696 bytes
 pub struct Texture{
     tex: Texture2d,
@@ -80,7 +80,7 @@ macro_rules! include_texture {
     };
 }
 
-/// Functionality for rendering
+/// Contains the display and handles most of the graphics
 pub struct Draw<'a> {
     display: GlutinFacade,
     program: Program,
