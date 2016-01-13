@@ -33,6 +33,7 @@ fn main(){
         Vector2<f32>
         Vector2<f64>
         GlutinFacade
+        TextureError
         fn(&(), RenderArgs)
         fn(&mut (), LogicArgs)
         Game<(), LogicFn, RenderFn>

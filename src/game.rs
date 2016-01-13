@@ -3,7 +3,7 @@ extern crate time;
 
 use std::collections::HashSet;
 
-use super::{Result, Draw, Texture};
+use super::{DrawResult, Draw, Texture};
 use time::precise_time_s as time_s;
 
 use glium::{Frame, Surface};
@@ -122,12 +122,12 @@ pub struct RenderArgs<'a>{
 
 impl<'a> RenderArgs<'a>{
     /// Uses `Draw` to draw a texture onto the screen
-    pub fn draw_texture(&mut self, texture: &Texture, rotation: f32, x: f32, y: f32) -> Result<()>{
+    pub fn draw_texture(&mut self, texture: &Texture, rotation: f32, x: f32, y: f32) -> DrawResult<()>{
         self.draw.draw_texture(self.target, texture, rotation, x, y)
     }
 
     /// Draws an iterator of `Sprite`s onto the screen
-    pub fn draw_sprites<'b, D: 'b + Sprite, I: IntoIterator<Item = &'b D>>(&mut self, sprites: I) -> Result<()>{
+    pub fn draw_sprites<'b, D: 'b + Sprite, I: IntoIterator<Item = &'b D>>(&mut self, sprites: I) -> DrawResult<()>{
         for sprite in sprites{
             let (x, y) = sprite.get_pos();
 

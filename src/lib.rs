@@ -19,22 +19,20 @@ pub use vector::{Vector2, FloatVector};
 /// Current engine version
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/version"));
 
-/// Convenient `Result` type for `KoromeError`
-pub type Result<T> = std::result::Result<T, KoromeError>;
+/// Result type for `korome::TextureError`
+pub type TextureResult<T> = Result<T, TextureError>;
+/// Result type for `glium::DrawError`
+pub type DrawResult<T> = Result<T, glium::DrawError>;
 
 quick_error! {
-    /// Wraps together errors that can occur in this crate
+    /// Wraps together all errors that can occur creating `Texture`s
     #[derive(Debug)]
-    pub enum KoromeError{
-        /// A `glium::DrawError`
-        DrawError(err: glium::DrawError){
-            from()
-            description("error during rendering")
-        }
+    pub enum TextureError{
         /// A `glium::texture::TextureCreationError`
         TextureCreationError(err: glium::texture::TextureCreationError){
             from()
-            description("texture creation error occured")
+            cause(err)
+            description("texture creation error")
         }
         /// An `image::ImageError`
         ImageError(err: image::ImageError){

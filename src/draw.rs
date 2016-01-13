@@ -9,7 +9,7 @@ use glium::index::NoIndices;
 use std::io::{Read, Cursor};
 use std::fs::File;
 
-use super::{Result};
+use super::{DrawResult, TextureResult};
 
 #[derive(Copy, Clone)]
 struct Vertex {
@@ -40,7 +40,7 @@ pub struct Texture{
 
 impl Texture {
     /// Creates a new instance of `Texture` with the given bytes
-    fn new(display: &GlutinFacade, bytes: &[u8], width: u32, height: u32) -> Result<Texture>{
+    fn new(display: &GlutinFacade, bytes: &[u8], width: u32, height: u32) -> TextureResult<Texture>{
         //let (dis_width, dis_height) = display.get_window().unwrap().get_inner_size().unwrap();
 
         let image = try!(image::load(Cursor::new(bytes),
@@ -63,7 +63,7 @@ impl Texture {
     }
 
     /// Reads the bytes of a texture from a file and creates a `Texture` instance
-    fn new_from_file(display: &GlutinFacade, str_path: &str, width: u32, height: u32) -> Result<Texture>{
+    fn new_from_file(display: &GlutinFacade, str_path: &str, width: u32, height: u32) -> TextureResult<Texture>{
         let mut f = try!(File::open(str_path));
         let mut bytes = Vec::new();
         try!(f.read_to_end(&mut bytes));
@@ -153,17 +153,17 @@ impl<'a> Draw<'a> {
     }
 
     /// Returns a `Texture` created from a byte slice
-    pub fn load_texture_from_bytes(&self, bytes: &[u8], width: u32, height: u32) -> Result<Texture> {
+    pub fn load_texture_from_bytes(&self, bytes: &[u8], width: u32, height: u32) -> TextureResult<Texture> {
         Texture::new(&self.display, bytes, width, height)
     }
 
     /// Returns a `Texture` created from a file
-    pub fn load_texture(&self, identifier: &'a str, width: u32, height: u32) -> Result<Texture> {
+    pub fn load_texture(&self, identifier: &'a str, width: u32, height: u32) -> TextureResult<Texture> {
         Texture::new_from_file(&self.display, &format!("{}.png", identifier), width, height)
     }
 
     /// Draws a texture onto the screen
-    pub fn draw_texture(&self, target: &mut glium::Frame, texture: &Texture, rotation: f32, x: f32, y: f32) -> Result<()>{
+    pub fn draw_texture(&self, target: &mut glium::Frame, texture: &Texture, rotation: f32, x: f32, y: f32) -> DrawResult<()>{
         let (sin, cos)  = rotation.sin_cos();
 
         let uniforms = uniform! {
