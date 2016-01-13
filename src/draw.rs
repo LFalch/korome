@@ -74,10 +74,11 @@ impl Texture {
     }
 }
 
+/// Loads a texture, by loading the bytes at compile-time
 #[macro_export]
 macro_rules! include_texture {
-    ($draw:expr, $texture:tt, $w:expr, $h:expr) => {
-        $draw.load_texture_from_bytes(include_bytes!($texture), $w, $h)
+    ($draw:expr, $texture:tt, $width:expr, $height:expr) => {
+        $draw.load_texture_from_bytes(include_bytes!($texture), $width, $height)
     };
 }
 

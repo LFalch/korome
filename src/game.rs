@@ -9,9 +9,9 @@ use time::precise_time_s as time_s;
 use glium::{Frame, Surface};
 use glium::glutin::{Event, ElementState, VirtualKeyCode};
 
-/// A struct to keep your "game" in
+/// Manages a main game loop with two functions and a shared object
 pub struct Game<'a, S, L, R>  where L: FnMut(&mut S, LogicArgs), R: FnMut(&S, RenderArgs){
-    /// An object that will parsed into the logic and render methods
+    /// An object that will be parsed to the logic and render functions
     pub shared: S,
     logic : L,
     render: R,
@@ -19,15 +19,11 @@ pub struct Game<'a, S, L, R>  where L: FnMut(&mut S, LogicArgs), R: FnMut(&S, Re
 }
 
 impl<'a, S, L, R> Game<'a, S, L, R> where L: FnMut(&mut S, LogicArgs), R: FnMut(&S, RenderArgs){
+    #[inline]
     /// Creates a new `Game` with a `Draw` and two closures
     pub fn new(draw: Draw<'a>, logic: L, render: R) -> Game<'a, (), L, R>
     where L: FnMut(&mut (), LogicArgs), R: FnMut(&(), RenderArgs){
-        Game{
-            shared: (),
-            logic : logic,
-            render: render,
-            draw  : draw,
-        }
+        Game::with_shared(draw, (), logic, render)
     }
 
     /// Creates a new `Game` with a `Draw`, a shared value, and two closures
@@ -68,9 +64,7 @@ impl<'a, S, L, R> Game<'a, S, L, R> where L: FnMut(&mut S, LogicArgs), R: FnMut(
             }
 
             let now = time_s();
-
             let delta = now-last;
-
             last = now;
 
             (self.logic)(&mut self.shared, LogicArgs{
@@ -97,11 +91,11 @@ impl<'a, S, L, R> Game<'a, S, L, R> where L: FnMut(&mut S, LogicArgs), R: FnMut(
 /// Wraps all useful info about what has happened (e.g. events) together
 #[derive(Debug)]
 pub struct LogicArgs<'a>{
-    /// The delta time since last frame
+    /// The time that has passed since last update
     pub delta    : f64,
     /// The current position of the mouse
     pub mousepos : (i32, i32),
-    /// A vector of all key events that happened
+    /// A slice of all key events that have happened
     pub keyevents: &'a [(bool, VirtualKeyCode)],
 
     /// A `HashSet` of all keys that are pressed down
@@ -115,9 +109,7 @@ impl<'a> LogicArgs<'a>{
     }
 }
 
-use std::ops::Deref;
-
-/// Wraps everything needed to render together
+/// Wraps together everything needed to render
 pub struct RenderArgs<'a>{
     /// Object used to draw on the buffer.
     /// Generally, you shouldn't have to access this directly.
@@ -139,40 +131,20 @@ impl<'a> RenderArgs<'a>{
     }
 }
 
-impl<'a> Deref for RenderArgs<'a>{
-    type Target = Draw<'a>;
-
-    fn deref(&self) -> &Draw<'a>{
-        self.draw
-    }
-}
-
 /// Macro for easily doing things if particular keys are down
-/// # Examples
-/// Basic usage:
+/// # Example
 ///
-/// ```ignore
-/// #[macro_use]
-/// extern crate korome;
-///
-/// use korome::{GameLogic, LogicArgs};
-///
-/// struct Logic {
-///     player_y: f32
-/// }
-///
-/// impl GameLogic for Logic{
-///     fn logic(&self, l_args: LogicArgs){
-///         is_down!(l_args;
-///             W, Up => {
-///                 self.player_y -= l_args.delta() as f32
-///             },
-///             S, Down => {
-///                 self.player_y += l_args.delta() as f32
-///             }
-///         );
-///     }
-///     // the rest of implementation omitted
+/// ```rust
+/// # macro_rules! is_down{($l_args:ident; $($($key:ident),+ => $b:block),+) => {}}
+/// fn logic(player_y: &mut f32, l_args: korome::LogicArgs){
+///     is_down!{l_args;
+///         W, Up => {
+///             player_y -= l_args.delta() as f32;
+///         },
+///         S, Down => {
+///             player_y += l_args.delta() as f32;
+///         }
+///     };
 /// }
 /// ```
 #[macro_export]
