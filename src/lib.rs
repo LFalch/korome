@@ -5,7 +5,6 @@
 extern crate glium;
 extern crate time;
 extern crate image;
-extern crate toml;
 #[macro_use]
 extern crate quick_error;
 
