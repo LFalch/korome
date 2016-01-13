@@ -52,18 +52,14 @@ impl<'a, S, L, R> Game<'a, S, L, R> where L: FnMut(&mut S, LogicArgs), R: FnMut(
             for ev in self.draw.get_display().poll_events() {
                 match ev {
                     Event::Closed => break 'main,
-                    Event::KeyboardInput(es, _, vkc) => match es{
+                    Event::KeyboardInput(es, _, Some(vkc)) => match es{
                         ElementState::Pressed  => {
-                            if let Some(vkc) = vkc{
-                                down_keys.insert( vkc);
-                                keys.push((true , vkc));
-                            }
+                            down_keys.insert( vkc);
+                            keys.push((true , vkc));
                         },
                         ElementState::Released => {
-                            if let Some(vkc) = vkc{
-                                down_keys.remove(&vkc);
-                                keys.push((false, vkc));
-                            }
+                            down_keys.remove(&vkc);
+                            keys.push((false, vkc));
                         }
                     },
                     Event::MouseMoved(pos) => mousepos = pos,
