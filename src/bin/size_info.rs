@@ -22,8 +22,6 @@ type LogicFn = fn(&mut(), LogicArgs);
 type RenderFn = fn(&(), RenderArgs);
 
 fn main(){
-    println!("Version: {}", korome::VERSION);
-
     print_type_info!(
         Draw
         Texture
