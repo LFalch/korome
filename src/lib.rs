@@ -17,7 +17,7 @@ pub use game::{Game, Sprite, LogicArgs, RenderArgs};
 pub use vector::{Vector2, FloatVector};
 
 /// Current engine version
-pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/version"));
+pub const VERSION: &'static str = concat!("v", env!("CARGO_PKG_VERSION"));
 
 /// Result type for `korome::TextureError`
 pub type TextureResult<T> = Result<T, TextureError>;

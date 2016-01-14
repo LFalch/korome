@@ -2,7 +2,6 @@
 name = "korome"
 version = "0.7.0"
 authors = ["LFalch <lucas@wasd.dk>"]
-build = "build.rs"
 
 [dependencies]
 glium = "0.13"
