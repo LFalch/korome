@@ -5,16 +5,18 @@ extern crate korome;
 use korome::*;
 
 fn main() {
+    // Create the draw object, which creates a window with the given title and dimensions
     let draw = Draw::new("korome works!", 800, 600);
 
+    // Load a texture, whose bytes have been loaded at compile-time with the given dimensions
     let planet = include_texture!(draw, "planet.png", 64, 64).unwrap();
 
+    // Create a vector and push the objects to it
     let mut objs = Vec::new();
-
     objs.push(Object::new(&planet, -400., 300., 0.));
 
+    // Create the game instance with objs as the shared
     let game = Game::with_shared(draw, objs, logic, render);
-
     game.run_until_closed();
 }
 
@@ -49,13 +51,16 @@ impl<'a> Sprite for Object<'a>{
 }
 
 fn logic(objs: &mut Vec<Object>, l_args: LogicArgs){
+    // Get a mutable reference so we can move it
     let ref mut planet = objs[0];
 
     let delta = l_args.delta as f32;
 
+    // Set the velocity the 200 pixels per second
     let vel = 200.0 * delta;
     let pos = &mut planet.pos;
 
+    // Make the planet move with WASD and the arrow keys and rotate with Q and E
     is_down!{
         l_args;
 
@@ -81,7 +86,6 @@ fn logic(objs: &mut Vec<Object>, l_args: LogicArgs){
 }
 
 fn render(objs: &Vec<Object>, mut r_args: RenderArgs){
-    //.rotate() doesn't actually work properly right now
-    r_args.draw_sprites(objs)
-        .unwrap_or_else(|e| panic!("{}", e))
+    // Draw all sprites in objs
+    r_args.draw_sprites(objs).unwrap();
 }
