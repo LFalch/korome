@@ -14,9 +14,45 @@ fn main() {
     let mut objs = Vec::new();
     objs.push(Object::new(&planet, -400., 300., 0.));
 
-    // Create the game instance with objs as the shared
-    let game = Game::with_shared(draw, objs, logic, render);
-    game.run_until_closed();
+    // Create the game instance
+    let mut game = Game::new(draw);
+
+    while let Some((l_args, mut drawer)) = game.update() {
+        {
+            // Get a mutable reference so we can move it
+            let ref mut planet = objs[0];
+
+            let delta = l_args.delta as f32;
+
+            // Set the velocity the 200 pixels per second
+            let vel = 200.0 * delta;
+            let pos = &mut planet.pos;
+
+            // Make the planet move with WASD and the arrow keys and rotate with Q and E
+            is_down!{l_args;
+                Left, A => {
+                    pos.0 -= vel
+                },
+                Right, D => {
+                    pos.0 += vel
+                },
+                Down , S => {
+                    pos.1 -= vel
+                },
+                Up   , W => {
+                    pos.1 += vel
+                },
+                Q => {
+                    planet.theta += delta
+                },
+                E => {
+                    planet.theta -= delta
+                }
+            }
+        }
+        // Draw all sprites in objs
+        drawer.draw_sprites(&objs).unwrap();
+    }
 }
 
 struct Object<'a>{
@@ -36,55 +72,16 @@ impl<'a> Object<'a>{
 }
 
 impl<'a> Sprite for Object<'a>{
+    #[inline]
     fn get_pos(&self) -> (f32, f32){
         self.pos.into()
     }
-
+    #[inline]
     fn get_rotation(&self) -> f32{
         self.theta
     }
-
+    #[inline]
     fn get_texture(&self) -> &Texture{
         self.tex
     }
-}
-
-fn logic(objs: &mut Vec<Object>, l_args: LogicArgs){
-    // Get a mutable reference so we can move it
-    let ref mut planet = objs[0];
-
-    let delta = l_args.delta as f32;
-
-    // Set the velocity the 200 pixels per second
-    let vel = 200.0 * delta;
-    let pos = &mut planet.pos;
-
-    // Make the planet move with WASD and the arrow keys and rotate with Q and E
-    is_down!{
-        l_args;
-
-        Left, A => {
-            pos.0 -= vel
-        },
-        Right, D => {
-            pos.0 += vel
-        },
-        Down , S => {
-            pos.1 -= vel
-        },
-        Up   , W => {
-            pos.1 += vel
-        },
-        Q => {
-            planet.theta += delta
-        },
-        E => {
-            planet.theta -= delta
-        }
-    }
-}
-
-fn render(objs: &Vec<Object>, mut r_args: RenderArgs){
-    // Draw all sprites in objs
-    r_args.draw_sprites(objs).unwrap();
 }

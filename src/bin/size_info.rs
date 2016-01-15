@@ -18,23 +18,19 @@ macro_rules! print_type_info{
     }
 }
 
-type LogicFn = fn(&mut(), LogicArgs);
-type RenderFn = fn(&(), RenderArgs);
 
 fn main(){
     print_type_info!(
+        Game
         Draw
+        Update
+        Drawer
         Texture
         Texture2d
-        LogicArgs
-        RenderArgs
         Vector2<f32>
         Vector2<f64>
         GlutinFacade
         TextureError
         VirtualKeyCode
-        fn(&(), RenderArgs)
-        fn(&mut (), LogicArgs)
-        Game<(), LogicFn, RenderFn>
     );
 }

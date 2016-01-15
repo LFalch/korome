@@ -11,121 +11,104 @@ use glium::glutin::{Event, ElementState};
 
 pub use glium::glutin::VirtualKeyCode;
 
-/// Manages a main game loop with two functions and a shared object
-pub struct Game<'a, S, L, R>  where L: FnMut(&mut S, LogicArgs), R: FnMut(&S, RenderArgs){
-    /// An object that will be parsed to the logic and render functions
-    pub shared: S,
-    logic : L,
-    render: R,
+/// Manages a game loop
+pub struct Game<'a>{
     draw  : Draw<'a>,
+    last: f64,
+    down_keys: HashSet<VirtualKeyCode>,
+    mousepos: (i32, i32),
 }
 
-impl<'a, S, L, R> Game<'a, S, L, R> where L: FnMut(&mut S, LogicArgs), R: FnMut(&S, RenderArgs){
+impl<'a> Game<'a>{
     #[inline]
-    /// Creates a new `Game` with a `Draw` and two closures
-    pub fn new(draw: Draw<'a>, logic: L, render: R) -> Game<'a, (), L, R>
-    where L: FnMut(&mut (), LogicArgs), R: FnMut(&(), RenderArgs){
-        Game::with_shared(draw, (), logic, render)
-    }
-
-    /// Creates a new `Game` with a `Draw`, a shared value, and two closures
-    pub fn with_shared(draw: Draw<'a>, shared: S, logic: L, render: R) -> Self{
+    /// Creates a new `Game` from a `Draw`
+    pub fn new(draw: Draw<'a>) -> Self {
         Game{
-            shared: shared,
-            logic : logic,
-            render: render,
-            draw  : draw,
+            draw: draw,
+            last: time_s(),
+            mousepos: (0, 0),
+            down_keys: HashSet::new()
         }
     }
 
-    /// Runs the `Game` until the window is closed
-    pub fn run_until_closed(mut self){
-        let mut last = time_s();
-        let mut down_keys: HashSet<VirtualKeyCode> = HashSet::new();
-        let mut mousepos = (0, 0);
+    /// Gets new updates and iniatiates drawing next frame
+    pub fn update(&mut self) -> Option<(Update, Drawer)>{
+        let mut keys = Vec::new();
 
-        'main: loop {
-            let mut keys = Vec::new();
-
-            for ev in self.draw.get_display().poll_events() {
-                match ev {
-                    Event::Closed => break 'main,
-                    Event::KeyboardInput(es, _, Some(vkc)) => match es{
-                        ElementState::Pressed  => {
-                            down_keys.insert( vkc);
-                            keys.push((true , vkc));
-                        },
-                        ElementState::Released => {
-                            down_keys.remove(&vkc);
-                            keys.push((false, vkc));
-                        }
+        for ev in self.draw.get_display().poll_events() {
+            match ev {
+                Event::Closed => return None,
+                Event::KeyboardInput(es, _, Some(vkc)) => match es{
+                    ElementState::Pressed  => {
+                        self.down_keys.insert( vkc);
+                        keys.push((true , vkc));
                     },
-                    Event::MouseMoved(pos) => mousepos = pos,
-                    _ => ()
-                }
+                    ElementState::Released => {
+                        self.down_keys.remove(&vkc);
+                        keys.push((false, vkc));
+                    }
+                },
+                Event::MouseMoved(pos) => self.mousepos = pos,
+                _ => ()
             }
-
-            let now = time_s();
-            let delta = now-last;
-            last = now;
-
-            (self.logic)(&mut self.shared, LogicArgs{
-                delta    :  delta,
-                keyevents: &keys,
-                down_keys: &down_keys,
-                mousepos :  mousepos
-            });
-
-            // Do rendering
-            let mut target = self.draw.get_display().draw();
-            target.clear_color(0.0, 0.0, 1.0, 1.0);
-
-            (self.render)(&self.shared, RenderArgs{
-                target: &mut target,
-                draw  : &self.draw
-            });
-
-            target.finish().unwrap()
         }
+
+        let now = time_s();
+        let delta = now - self.last;
+        self.last = now;
+
+        let update = Update{
+            delta    : delta,
+            keyevents: keys,
+            down_keys: &self.down_keys,
+            mousepos : self.mousepos
+        };
+
+        // Init rendering
+        let mut target = self.draw.get_display().draw();
+        target.clear_color(0.0, 0.0, 1.0, 1.0);
+
+        let drawer = Drawer{
+            target: target,
+            draw  : &self.draw
+        };
+
+        Some((update, drawer))
     }
 }
 
 /// Wraps together useful data about what has happened (e.g. events)
 #[derive(Debug)]
-pub struct LogicArgs<'a>{
+pub struct Update<'a>{
     /// The time that has passed since last update
     pub delta    : f64,
     /// The current position of the mouse
     pub mousepos : (i32, i32),
-    /// A slice of all key events that have happened
-    pub keyevents: &'a [(bool, VirtualKeyCode)],
+    /// A vector of all key events that have happened
+    pub keyevents: Vec<(bool, VirtualKeyCode)>,
 
     /// A `HashSet` of all keys that are pressed down
     down_keys: &'a HashSet<VirtualKeyCode>
 }
 
-impl<'a> LogicArgs<'a>{
+impl<'a> Update<'a>{
     /// Checks whether a key is pressed down
     pub fn is_down(&self, key: &VirtualKeyCode) -> bool{
         self.down_keys.contains(key)
     }
 }
 
-/// Wraps together everything needed to render and
-/// also provides functions for actually drawing
-pub struct RenderArgs<'a>{
-    /// Object used to draw on the buffer.
-    /// Generally, you shouldn't have to access this directly.
-    pub target: &'a mut glium::Frame,
-    /// Reference to the `Draw` instance.
-    /// Generally, you shouldn't have to access this directly.
+/// Provides functionality for drawing easily
+pub struct Drawer<'a>{
+    target: glium::Frame,
+    /// Reference to the draw instance
     pub draw  : &'a Draw<'a>
 }
 
-impl<'a> RenderArgs<'a>{
+impl<'a> Drawer<'a>{
     /// Uses `Draw` to draw a texture onto the screen
     pub fn draw_texture(&mut self, texture: &Texture, rotation: f32, x: f32, y: f32) -> DrawResult<()>{
-        self.draw.draw_texture(self.target, texture, rotation, x, y)
+        self.draw.draw_texture(&mut self.target, texture, rotation, x, y)
     }
 
     /// Draws an iterator of `Sprite`s onto the screen
@@ -140,6 +123,13 @@ impl<'a> RenderArgs<'a>{
         }
 
         Ok(())
+    }
+}
+
+impl<'a> Drop for Drawer<'a>{
+    #[inline]
+    fn drop(&mut self){
+        self.target.set_finish().unwrap()
     }
 }
 
