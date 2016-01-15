@@ -7,7 +7,9 @@ use super::{DrawResult, Draw, Texture};
 use time::precise_time_s as time_s;
 
 use glium::{Frame, Surface};
-use glium::glutin::{Event, ElementState, VirtualKeyCode};
+use glium::glutin::{Event, ElementState};
+
+pub use glium::glutin::VirtualKeyCode;
 
 /// Manages a main game loop with two functions and a shared object
 pub struct Game<'a, S, L, R>  where L: FnMut(&mut S, LogicArgs), R: FnMut(&S, RenderArgs){
@@ -170,6 +172,6 @@ pub trait Sprite {
 #[macro_export]
 macro_rules! is_down{
     ( $l_args:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {{
-        $( if $( $l_args.is_down(&glium::glutin::VirtualKeyCode::$key) )||+ $b )+
+        $( if $( $l_args.is_down(&korome::VirtualKeyCode::$key) )||+ $b )+
     }}
 }

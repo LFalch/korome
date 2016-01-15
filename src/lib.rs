@@ -13,7 +13,7 @@ mod game;
 mod vector;
 
 pub use draw::{Draw, Texture};
-pub use game::{Game, Sprite, LogicArgs, RenderArgs};
+pub use game::{Game, Sprite, LogicArgs, RenderArgs, VirtualKeyCode};
 pub use vector::{Vector2, FloatVector};
 
 /// Current engine version
