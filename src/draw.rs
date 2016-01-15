@@ -183,6 +183,25 @@ impl<'a> Draw<'a> {
         Ok(())
     }
 
+    /// Draws a texture onto the screen without rotation
+    pub fn draw_texture_rigid(&self, target: &mut glium::Frame, texture: &Texture, x: f32, y: f32) -> DrawResult<()>{
+        let uniforms = uniform! {
+            tex: &texture.tex,
+            matrix: [
+                [1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [  x,   y, 0.0, 1.0],
+            ],
+        };
+
+        for vertex_buffer in &texture.vertex_buffers{
+            try!(target.draw(vertex_buffer, INDICES, &self.program, &uniforms, &self.params));
+        }
+
+        Ok(())
+    }
+
     /// Returns the inner `GlutinFacade`
     pub fn get_display(&self) -> &GlutinFacade {
         &self.display
