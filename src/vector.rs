@@ -26,7 +26,7 @@ macro_rules! impl_for {
         impl FloatVector<$t> for Vector2<$t>{
             fn unit_vector(direction: $t) -> Self{
                 let (y, x) = direction.sin_cos();
-                Vector2(x, -y)
+                Vector2(x, y)
             }
 
             fn normalise(self) -> Self{

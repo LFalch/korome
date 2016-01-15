@@ -169,10 +169,10 @@ impl<'a> Draw<'a> {
         let uniforms = uniform! {
             tex   : &texture.tex,
             matrix: [
-                [cos, -sin, 0.0, 0.0],
-                [sin,  cos, 0.0, 0.0],
-                [0.0,  0.0, 1.0, 0.0],
-                [  x,    y, 0.0, 1.0],
+                [ cos, sin, 0.0, 0.0],
+                [-sin, cos, 0.0, 0.0],
+                [ 0.0, 0.0, 1.0, 0.0],
+                [   x,   y, 0.0, 1.0],
             ],
         };
 
