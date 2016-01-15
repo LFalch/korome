@@ -32,6 +32,7 @@ fn main(){
         Vector2<f64>
         GlutinFacade
         TextureError
+        VirtualKeyCode
         fn(&(), RenderArgs)
         fn(&mut (), LogicArgs)
         Game<(), LogicFn, RenderFn>
