@@ -1,4 +1,3 @@
-extern crate glium;
 #[macro_use]
 extern crate korome;
 
@@ -76,10 +75,10 @@ fn logic(objs: &mut Vec<Object>, l_args: LogicArgs){
         Up   , W => {
             pos.1 += vel
         },
-        E => {
+        Q => {
             planet.theta += delta
         },
-        Q => {
+        E => {
             planet.theta -= delta
         }
     }

@@ -22,8 +22,6 @@ type LogicFn = fn(&mut(), LogicArgs);
 type RenderFn = fn(&(), RenderArgs);
 
 fn main(){
-    println!("Version: {}", korome::VERSION);
-
     print_type_info!(
         Draw
         Texture
@@ -34,6 +32,7 @@ fn main(){
         Vector2<f64>
         GlutinFacade
         TextureError
+        VirtualKeyCode
         fn(&(), RenderArgs)
         fn(&mut (), LogicArgs)
         Game<(), LogicFn, RenderFn>
