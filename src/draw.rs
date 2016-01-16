@@ -1,13 +1,12 @@
 extern crate glium;
 extern crate image;
 
-use glium::{DisplayBuild, VertexBuffer, Program, DrawParameters, Surface};
-use glium::backend::glutin_backend::GlutinFacade;
+use glium::{DisplayBuild, VertexBuffer, Program, DrawParameters, Display, Surface};
 use glium::texture::Texture2d;
 use glium::index::NoIndices;
 
-use std::io::{Read, Cursor};
-use std::fs::File;
+use std::path::Path;
+use std::ops::{Deref, DerefMut};
 
 use super::{DrawResult, TextureResult};
 
@@ -25,7 +24,7 @@ impl Vertex{
         Vertex{
             position  : position,
             tex_coords: tex_coords,
-         }
+        }
     }
 }
 
@@ -39,15 +38,26 @@ pub struct Texture{
 }
 
 impl Texture {
-    /// Creates a new instance of `Texture` with the given bytes
-    fn new(display: &GlutinFacade, bytes: &[u8], width: u32, height: u32) -> TextureResult<Texture>{
-        //let (dis_width, dis_height) = display.get_window().unwrap().get_inner_size().unwrap();
+    #[inline]
+    fn from_png_bytes(display: &Display, bytes: &[u8]) -> TextureResult<Texture>{
+        Texture::new(display,
+            try!(
+                image::load_from_memory_with_format(bytes, image::PNG)
+            ).to_rgba()
+        )
+    }
+    #[inline]
+    fn from_file<P: AsRef<Path>>(display: &Display, path: P) -> TextureResult<Texture>{
+        Texture::new(display,
+            try!(
+                image::open(path)
+            ).to_rgba()
+        )
+    }
 
-        let image = try!(image::load(Cursor::new(bytes),
-            image::PNG)).to_rgba();
-
-        let image_dimensions = image.dimensions();
-        let image = glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions);
+    fn new(display: &Display, image: image::RgbaImage) -> TextureResult<Texture>{
+        let (width, height) = image.dimensions();
+        let image = glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), (width, height));
 
         let (w, h) = (width as f32 / 2.0, height as f32 / 2.0);
 
@@ -61,28 +71,19 @@ impl Texture {
             vertex_buffers: [try!(VertexBuffer::new(display, &[v1, v2, v4])), try!(VertexBuffer::new(display, &[v2, v3, v4]))],
         })
     }
-
-    /// Reads the bytes of a texture from a file and creates a `Texture` instance
-    fn new_from_file(display: &GlutinFacade, str_path: &str, width: u32, height: u32) -> TextureResult<Texture>{
-        let mut f = try!(File::open(str_path));
-        let mut bytes = Vec::new();
-        try!(f.read_to_end(&mut bytes));
-
-        Self::new(display, &bytes, width, height)
-    }
 }
 
 /// Loads a texture, by loading the bytes at compile-time
 #[macro_export]
 macro_rules! include_texture {
-    ($draw:expr, $texture:tt, $width:expr, $height:expr) => {
-        $draw.load_texture_from_bytes(include_bytes!($texture), $width, $height)
+    ($draw:expr, $texture:tt) => {
+        $draw.load_texture_from_bytes(include_bytes!($texture))
     };
 }
 
 /// Contains the display and handles most of the graphics
 pub struct Draw<'a> {
-    display: GlutinFacade,
+    display: Display,
     program: Program,
     params : DrawParameters<'a>
 }
@@ -91,7 +92,7 @@ const INDICES: NoIndices = NoIndices(glium::index::PrimitiveType::TrianglesList)
 
 impl<'a> Draw<'a> {
     /// Creates a new `Draw` from a `Display` made using the arguments
-    pub fn new(title: &str, width: u32, height: u32) -> Draw<'a> {
+    pub fn new(title: &str, width: u32, height: u32) -> Self {
         Self::from_display(
             glium::glutin::WindowBuilder::new()
                 .with_title(title.to_string())
@@ -102,7 +103,7 @@ impl<'a> Draw<'a> {
     }
 
     /// Creates a new `Draw` instance using the given display
-    pub fn from_display(display: GlutinFacade) -> Draw<'a> {
+    pub fn from_display(display: Display) -> Self {
         let (w, h) = display.get_window().unwrap().get_inner_size().unwrap();
         let (w, h) = (w as f32 / 2.0, h as f32 / 2.0);
 
@@ -139,27 +140,29 @@ impl<'a> Draw<'a> {
             }
         "#;
 
-        let params: DrawParameters = DrawParameters{
+        let params = DrawParameters{
             blend : glium::Blend::alpha_blending(),
             .. Default::default()
         };
 
         Draw{
+            // Unwrap should be safe
             program: Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap(),
             display: display,
             params : params,
-            // halfsize: (w, h),
         }
     }
 
-    /// Returns a `Texture` created from a byte slice
-    pub fn load_texture_from_bytes(&self, bytes: &[u8], width: u32, height: u32) -> TextureResult<Texture> {
-        Texture::new(&self.display, bytes, width, height)
+    #[inline]
+    /// Returns a `Texture` created from a PNG-encoded byte slice
+    pub fn load_texture_from_bytes(&self, bytes: &[u8]) -> TextureResult<Texture> {
+        Texture::from_png_bytes(&self.display, bytes)
     }
 
+    #[inline]
     /// Returns a `Texture` created from a file
-    pub fn load_texture(&self, identifier: &'a str, width: u32, height: u32) -> TextureResult<Texture> {
-        Texture::new_from_file(&self.display, &format!("{}.png", identifier), width, height)
+    pub fn load_texture_from_file<P: AsRef<Path>>(&self, path: P) -> TextureResult<Texture> {
+        Texture::from_file(&self.display, path)
     }
 
     /// Draws a texture onto the screen
@@ -201,9 +204,91 @@ impl<'a> Draw<'a> {
 
         Ok(())
     }
+}
 
-    /// Returns the inner `GlutinFacade`
-    pub fn get_display(&self) -> &GlutinFacade {
+impl<'a> Deref for Draw<'a>{
+    type Target = Display;
+
+    #[inline]
+    fn deref(&self) -> &Display{
         &self.display
     }
+}
+
+/// Provides functionality for drawing.
+/// Can also be dereferenced into a `glium::Frame`.
+pub struct Drawer<'a>{
+    target: glium::Frame,
+    /// Reference to the draw instance
+    pub draw  : &'a Draw<'a>
+}
+
+impl<'a> Drawer<'a>{
+    #[inline]
+    /// Creates a new `Drawer` to draw next frame
+    pub fn new(draw: &'a Draw<'a>) -> Self{
+        let target = draw.draw();
+        Drawer{
+            target: target,
+            draw: draw
+        }
+    }
+
+    #[inline]
+    /// Clears the screen with the specified colour
+    pub fn clear(&mut self, red: f32, green: f32, blue: f32){
+        self.clear_color(red, green, blue, 1.)
+    }
+
+    #[inline]
+    /// Uses `Draw` to draw a texture onto the screen
+    pub fn draw_texture(&mut self, texture: &Texture, rotation: f32, x: f32, y: f32) -> DrawResult<()>{
+        self.draw.draw_texture(self, texture, rotation, x, y)
+    }
+
+    /// Draws an iterator of `Sprite`s onto the screen
+    pub fn draw_sprites<'b, D: 'b + Sprite, I: IntoIterator<Item = &'b D>>(&mut self, sprites: I) -> DrawResult<()>{
+        for sprite in sprites{
+            let (x, y) = sprite.get_pos();
+
+            try!(
+                self.draw_texture(sprite.get_texture(),
+                sprite.get_rotation(), x, y)
+            );
+        }
+
+        Ok(())
+    }
+}
+
+impl<'a> Deref for Drawer<'a>{
+    type Target = glium::Frame;
+    #[inline]
+    fn deref(&self) -> &glium::Frame{
+        &self.target
+    }
+}
+
+impl<'a> DerefMut for Drawer<'a>{
+    #[inline]
+    fn deref_mut(&mut self) -> &mut glium::Frame{
+        &mut self.target
+    }
+}
+
+impl<'a> Drop for Drawer<'a>{
+    #[inline]
+    fn drop(&mut self){
+        self.target.set_finish().unwrap()
+    }
+}
+
+/// Descibes objects that can be drawn to the screen
+pub trait Sprite {
+    /// Returns the position on the screen it should be drawn
+    fn get_pos(&self) -> (f32, f32);
+    /// Returns the rotation it should be drawn with
+    fn get_rotation(&self) -> f32;
+    /// Returns the `Texture`
+    fn get_texture(&self) -> &Texture;
 }

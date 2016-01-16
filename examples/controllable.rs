@@ -7,8 +7,8 @@ fn main() {
     // Create the draw object, which creates a window with the given title and dimensions
     let draw = Draw::new("korome works!", 800, 600);
 
-    // Load a texture, whose bytes have been loaded at compile-time with the given dimensions
-    let planet = include_texture!(draw, "planet.png", 64, 64).unwrap();
+    // Load a texture, whose bytes have been loaded at compile-time
+    let planet = include_texture!(draw, "planet.png").unwrap();
 
     // Create a vector and push the objects to it
     let mut objs = Vec::new();
@@ -18,40 +18,44 @@ fn main() {
     let mut game = Game::new(draw);
 
     while let Some((l_args, mut drawer)) = game.update() {
-        {
-            // Get a mutable reference so we can move it
-            let ref mut planet = objs[0];
+        logic(l_args, &mut objs);
 
-            let delta = l_args.delta as f32;
-
-            // Set the velocity the 200 pixels per second
-            let vel = 200.0 * delta;
-            let pos = &mut planet.pos;
-
-            // Make the planet move with WASD and the arrow keys and rotate with Q and E
-            is_down!{l_args;
-                Left, A => {
-                    pos.0 -= vel
-                },
-                Right, D => {
-                    pos.0 += vel
-                },
-                Down , S => {
-                    pos.1 -= vel
-                },
-                Up   , W => {
-                    pos.1 += vel
-                },
-                Q => {
-                    planet.theta += delta
-                },
-                E => {
-                    planet.theta -= delta
-                }
-            }
-        }
+        drawer.clear(0., 0., 1.);
         // Draw all sprites in objs
         drawer.draw_sprites(&objs).unwrap();
+    }
+}
+
+fn logic(l_args: Update, objs: &mut Vec<Object>){
+    // Get a mutable reference so we can move it
+    let ref mut planet = objs[0];
+
+    let delta = l_args.delta as f32;
+
+    // Set the velocity to 200 pixels per second
+    let vel = 200.0 * delta;
+    let pos = &mut planet.pos;
+
+    // Make the planet move with WASD and the arrow keys and rotate with Q and E
+    is_down!{l_args;
+        Left, A => {
+            pos.0 -= vel
+        },
+        Right, D => {
+            pos.0 += vel
+        },
+        Down , S => {
+            pos.1 -= vel
+        },
+        Up   , W => {
+            pos.1 += vel
+        },
+        Q => {
+            planet.theta += delta
+        },
+        E => {
+            planet.theta -= delta
+        }
     }
 }
 

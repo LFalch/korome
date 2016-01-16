@@ -12,8 +12,8 @@ mod draw;
 mod logic;
 mod vector;
 
-pub use draw::{Draw, Texture};
-pub use logic::{Game, Drawer, Sprite, Update, VirtualKeyCode};
+pub use draw::{Draw, Drawer, Sprite, Texture};
+pub use logic::{Game, Update, VirtualKeyCode};
 pub use vector::{Vector2, FloatVector};
 
 /// Result type for `korome::TextureError`
