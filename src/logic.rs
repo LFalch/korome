@@ -110,8 +110,8 @@ pub trait Update{
 ///
 /// ```rust
 /// # macro_rules! is_down{($l_args:ident; $($($key:ident),+ => $b:block),+) => {}}
-/// fn logic(player_y: &mut f32, l_args: korome::LogicArgs){
-///     is_down!{l_args;
+/// fn logic(player_y: &mut f32, info: korome::FrameInfo){
+///     is_down!{info;
 ///         W, Up => {
 ///             player_y -= l_args.delta() as f32;
 ///         },
