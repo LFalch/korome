@@ -82,16 +82,17 @@ macro_rules! include_texture {
 }
 
 /// Contains the display and handles most of the graphics
-pub struct Draw<'a> {
+pub struct Graphics<'a> {
     display: Display,
     program: Program,
+    h_size : (f32, f32),
     params : DrawParameters<'a>
 }
 
 const INDICES: NoIndices = NoIndices(glium::index::PrimitiveType::TrianglesList);
 
-impl<'a> Draw<'a> {
-    /// Creates a new `Draw` from a `Display` made using the arguments
+impl<'a> Graphics<'a> {
+    /// Creates a new `Graphics` from a `Display` made using the arguments
     pub fn new(title: &str, width: u32, height: u32) -> Self {
         Self::from_display(
             glium::glutin::WindowBuilder::new()
@@ -102,7 +103,7 @@ impl<'a> Draw<'a> {
         )
     }
 
-    /// Creates a new `Draw` instance using the given display
+    /// Creates a new `Graphics` instance using the given display
     pub fn from_display(display: Display) -> Self {
         let (w, h) = display.get_window().unwrap().get_inner_size().unwrap();
         let (w, h) = (w as f32 / 2.0, h as f32 / 2.0);
@@ -145,12 +146,19 @@ impl<'a> Draw<'a> {
             .. Default::default()
         };
 
-        Draw{
+        Graphics{
             // Unwrap should be safe
             program: Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap(),
             display: display,
             params : params,
+            h_size : (w, h)
         }
+    }
+
+    #[inline]
+    /// Returns half of the size of the window
+    pub fn get_h_size(&self) -> (f32, f32){
+        self.h_size
     }
 
     #[inline]
@@ -164,49 +172,22 @@ impl<'a> Draw<'a> {
     pub fn load_texture_from_file<P: AsRef<Path>>(&self, path: P) -> TextureResult<Texture> {
         Texture::from_file(&self.display, path)
     }
-
-    /// Draws a texture onto the screen
-    pub fn draw_texture(&self, target: &mut glium::Frame, texture: &Texture, rotation: f32, x: f32, y: f32) -> DrawResult<()>{
-        let (sin, cos)  = rotation.sin_cos();
-
-        let uniforms = uniform! {
-            tex   : &texture.tex,
-            matrix: [
-                [ cos, sin, 0.0, 0.0],
-                [-sin, cos, 0.0, 0.0],
-                [ 0.0, 0.0, 1.0, 0.0],
-                [   x,   y, 0.0, 1.0],
-            ],
-        };
-
-        for vertex_buffer in &texture.vertex_buffers{
-            try!(target.draw(vertex_buffer, INDICES, &self.program, &uniforms, &self.params));
-        }
-
-        Ok(())
-    }
-
-    /// Draws a texture onto the screen without rotation
-    pub fn draw_texture_rigid(&self, target: &mut glium::Frame, texture: &Texture, x: f32, y: f32) -> DrawResult<()>{
-        let uniforms = uniform! {
-            tex: &texture.tex,
-            matrix: [
-                [1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [  x,   y, 0.0, 1.0],
-            ],
-        };
-
-        for vertex_buffer in &texture.vertex_buffers{
-            try!(target.draw(vertex_buffer, INDICES, &self.program, &uniforms, &self.params));
-        }
-
-        Ok(())
-    }
 }
 
-impl<'a> Deref for Draw<'a>{
+fn draw(target: &mut glium::Frame, graphics: &Graphics, texture: &Texture, matrix: [[f32; 4]; 4]) -> DrawResult<()>{
+    let uniforms = uniform! {
+        tex   : &texture.tex,
+        matrix: matrix
+    };
+
+    for vertex_buffer in &texture.vertex_buffers{
+        try!(target.draw(vertex_buffer, INDICES, &graphics.program, &uniforms, &graphics.params));
+    }
+
+    Ok(())
+}
+
+impl<'a> Deref for Graphics<'a>{
     type Target = Display;
 
     #[inline]
@@ -220,17 +201,17 @@ impl<'a> Deref for Draw<'a>{
 pub struct Drawer<'a>{
     target: glium::Frame,
     /// Reference to the draw instance
-    pub draw  : &'a Draw<'a>
+    pub graphics: &'a Graphics<'a>
 }
 
 impl<'a> Drawer<'a>{
     #[inline]
     /// Creates a new `Drawer` to draw next frame
-    pub fn new(draw: &'a Draw<'a>) -> Self{
-        let target = draw.draw();
+    pub fn new(graphics: &'a Graphics<'a>) -> Self{
+        let target = graphics.draw();
         Drawer{
             target: target,
-            draw: draw
+            graphics: graphics
         }
     }
 
@@ -240,24 +221,30 @@ impl<'a> Drawer<'a>{
         self.clear_color(red, green, blue, 1.)
     }
 
-    #[inline]
-    /// Uses `Draw` to draw a texture onto the screen
-    pub fn draw_texture(&mut self, texture: &Texture, rotation: f32, x: f32, y: f32) -> DrawResult<()>{
-        self.draw.draw_texture(self, texture, rotation, x, y)
+    /// Draws a texture onto the screen
+    pub fn draw_texture(&mut self, texture: &Texture, x: f32, y: f32, rotation: f32) -> DrawResult<()>{
+        let (sin, cos)  = rotation.sin_cos();
+
+        let matrix = [
+            [ cos, sin, 0.0, 0.0],
+            [-sin, cos, 0.0, 0.0],
+            [ 0.0, 0.0, 1.0, 0.0],
+            [   x,   y, 0.0, 1.0],
+        ];
+
+        draw(self, self.graphics, texture, matrix)
     }
 
-    /// Draws an iterator of `Sprite`s onto the screen
-    pub fn draw_sprites<'b, D: 'b + Sprite, I: IntoIterator<Item = &'b D>>(&mut self, sprites: I) -> DrawResult<()>{
-        for sprite in sprites{
-            let (x, y) = sprite.get_pos();
+    /// Draws a texture onto the screen without rotation
+    pub fn draw_texture_rigid(&mut self, texture: &Texture, x: f32, y: f32) -> DrawResult<()>{
+        let matrix = [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [  x,   y, 0.0, 1.0],
+        ];
 
-            try!(
-                self.draw_texture(sprite.get_texture(),
-                sprite.get_rotation(), x, y)
-            );
-        }
-
-        Ok(())
+        draw(self, self.graphics, texture, matrix)
     }
 }
 
@@ -284,11 +271,7 @@ impl<'a> Drop for Drawer<'a>{
 }
 
 /// Descibes objects that can be drawn to the screen
-pub trait Sprite {
-    /// Returns the position on the screen it should be drawn
-    fn get_pos(&self) -> (f32, f32);
-    /// Returns the rotation it should be drawn with
-    fn get_rotation(&self) -> f32;
-    /// Returns the `Texture`
-    fn get_texture(&self) -> &Texture;
+pub trait Draw {
+    /// Draws itself to the screen
+    fn draw(&self, &mut Drawer) -> DrawResult<()>;
 }

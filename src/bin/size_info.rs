@@ -3,9 +3,8 @@ extern crate glium;
 
 use korome::*;
 
+use glium::Display;
 use glium::texture::Texture2d;
-
-use glium::backend::glutin_backend::GlutinFacade;
 
 macro_rules! print_type_info{
     ($($t:ty)*) => {
@@ -21,15 +20,15 @@ macro_rules! print_type_info{
 
 fn main(){
     print_type_info!(
-        Game
-        Draw
-        Update
         Drawer
         Texture
+        Display
+        Graphics
+        FrameInfo
         Texture2d
+        GameManager
         Vector2<f32>
         Vector2<f64>
-        GlutinFacade
         TextureError
         VirtualKeyCode
     );

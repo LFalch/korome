@@ -5,39 +5,33 @@ use korome::*;
 
 fn main() {
     // Create the draw object, which creates a window with the given title and dimensions
-    let draw = Draw::new("korome works!", 800, 600);
+    let graphics = Graphics::new("korome works!", 800, 600);
 
     // Load a texture, whose bytes have been loaded at compile-time
-    let planet = include_texture!(draw, "planet.png").unwrap();
+    let planet = include_texture!(graphics, "planet.png").unwrap();
 
-    // Create a vector and push the objects to it
-    let mut objs = Vec::new();
-    objs.push(Object::new(&planet, -400., 300., 0.));
+    // Create a planet Object with the texture
+    let mut planet = Object::new(&planet, -400., 300., 0.);
 
     // Create the game instance
-    let mut game = Game::new(draw);
+    let mut gm = GameManager::new(graphics);
 
-    while let Some((l_args, mut drawer)) = game.update() {
-        logic(l_args, &mut objs);
+    while let Some((info, mut drawer)) = gm.next_frame() {
+        logic(info, &mut planet);
 
         drawer.clear(0., 0., 1.);
-        // Draw all sprites in objs
-        drawer.draw_sprites(&objs).unwrap();
+        planet.draw(&mut drawer).unwrap();
     }
 }
 
-fn logic(l_args: Update, objs: &mut Vec<Object>){
-    // Get a mutable reference so we can move it
-    let ref mut planet = objs[0];
+fn logic(info: FrameInfo, planet: &mut Object){
+    let delta = info.delta as f32;
 
-    let delta = l_args.delta as f32;
-
-    // Set the velocity to 200 pixels per second
     let vel = 200.0 * delta;
-    let pos = &mut planet.pos;
+    let ref mut pos = planet.pos;
 
     // Make the planet move with WASD and the arrow keys and rotate with Q and E
-    is_down!{l_args;
+    is_down!{info;
         Left, A => {
             pos.0 -= vel
         },
@@ -75,17 +69,9 @@ impl<'a> Object<'a>{
     }
 }
 
-impl<'a> Sprite for Object<'a>{
-    #[inline]
-    fn get_pos(&self) -> (f32, f32){
-        self.pos.into()
-    }
-    #[inline]
-    fn get_rotation(&self) -> f32{
-        self.theta
-    }
-    #[inline]
-    fn get_texture(&self) -> &Texture{
-        self.tex
+impl<'a> Draw for Object<'a>{
+    fn draw(&self, drawer: &mut Drawer) -> DrawResult<()>{
+        let (x, y) = self.pos.into();
+        drawer.draw_texture(self.tex, x, y, self.theta)
     }
 }
