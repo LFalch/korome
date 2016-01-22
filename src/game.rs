@@ -172,6 +172,6 @@ pub trait Sprite {
 #[macro_export]
 macro_rules! is_down{
     ( $l_args:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {{
-        $( if $( $l_args.is_down(&korome::VirtualKeyCode::$key) )||+ $b )+
+        $( if $( $l_args.is_down(&::korome::VirtualKeyCode::$key) )||+ $b )+
     }}
 }
