@@ -4,6 +4,7 @@ extern crate time;
 use std::collections::HashSet;
 
 use super::{Graphics, Drawer};
+use draw::resize;
 use time::precise_time_s as time_s;
 
 use glium::glutin::{Event, ElementState};
@@ -35,6 +36,8 @@ impl<'a> GameManager<'a>{
         let mut keys = Vec::new();
         let mut mouses = Vec::new();
 
+        let mut resized = None::<(u32, u32)>;
+
         for ev in self.graphics.poll_events() {
             match ev {
                 Event::Closed => return None,
@@ -55,10 +58,16 @@ impl<'a> GameManager<'a>{
 
                     self.mousepos = (x, y);
                 },
+                // This is neccessary because `graphics` gets immutably borrowed for this for loop
+                Event::Resized(w, h) => resized = Some((w, h)),
                 Event::MouseInput(state, button) => mouses.push((state == ElementState::Pressed, button)),
                 _ => ()
             }
         }
+
+        if let Some((w, h)) = resized{
+            resize(&mut self.graphics, w, h);
+        }drop(resized);
 
         let now = time_s();
         let delta = now - self.last;

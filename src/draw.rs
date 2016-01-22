@@ -106,7 +106,7 @@ impl<'a> Graphics<'a> {
         let (w, h) = display.get_window().unwrap().get_inner_size().unwrap();
         let (w, h) = (w as f32 / 2.0, h as f32 / 2.0);
 
-        let vertex_shader_src = &r#"
+        let vertex_shader_src = r#"
             #version 140
 
             in vec2 position;
@@ -114,18 +114,19 @@ impl<'a> Graphics<'a> {
             out vec2 v_tex_coords;
 
             uniform mat4 matrix;
+            uniform vec2 h_size;
 
             void main() {
                 v_tex_coords = tex_coords;
 
                 vec4 pos = matrix * vec4(position, 0.0, 1.0);
 
-                pos.x /= $width;
-                pos.y /= $height;
+                pos.x /= h_size.x;
+                pos.y /= h_size.y;
 
                 gl_Position = pos;
             }
-        "#.replace("$width", &w.to_string()).replace("$height", &h.to_string());
+        "#;
         let fragment_shader_src = r#"
             #version 140
 
@@ -175,8 +176,15 @@ impl<'a> Graphics<'a> {
     }
 }
 
+#[inline(always)]
+// This function is only used inside `FrameInfo` when Event::Resized occurs
+pub fn resize(graphics: &mut Graphics, width: u32, height: u32){
+    graphics.h_size = (width as f32 / 2.0, height as f32 / 2.0);
+}
+
 fn draw(target: &mut glium::Frame, graphics: &Graphics, texture: &Texture, matrix: [[f32; 4]; 4]) -> DrawResult<()>{
     let uniforms = uniform! {
+        h_size: graphics.h_size,
         tex   : &texture.tex,
         matrix: matrix
     };
