@@ -3,7 +3,7 @@ extern crate image;
 
 use glium::{DisplayBuild, VertexBuffer, Program, DrawParameters, Display, Surface};
 use glium::texture::Texture2d;
-use glium::index::NoIndices;
+use glium::IndexBuffer;
 
 use std::path::Path;
 use std::ops::{Deref, DerefMut};
@@ -28,13 +28,10 @@ impl Vertex{
     }
 }
 
-type VertexBuffers = [VertexBuffer<Vertex>; 2];
-
 /// A 2D texture that is ready to be drawn
-// NOTE Size: 1 696 bytes
 pub struct Texture{
     tex: Texture2d,
-    vertex_buffers: VertexBuffers,
+    vertex_buffer: VertexBuffer<Vertex>,
 }
 
 impl Texture {
@@ -61,14 +58,16 @@ impl Texture {
 
         let (w, h) = (width as f32 / 2.0, height as f32 / 2.0);
 
-        let v1 = Vertex::new([-w, -h], [0.0, 0.0]);
-        let v2 = Vertex::new([ w, -h], [1.0, 0.0]);
-        let v3 = Vertex::new([ w,  h], [1.0, 1.0]);
-        let v4 = Vertex::new([-w,  h], [0.0, 1.0]);
+        let vb = try!(VertexBuffer::new(display, &[
+            Vertex::new([-w, -h], [0.0, 0.0]),
+            Vertex::new([ w, -h], [1.0, 0.0]),
+            Vertex::new([ w,  h], [1.0, 1.0]),
+            Vertex::new([-w,  h], [0.0, 1.0])
+        ]));
 
         Ok(Texture {
             tex: try!(Texture2d::new(display, image)),
-            vertex_buffers: [try!(VertexBuffer::new(display, &[v1, v2, v4])), try!(VertexBuffer::new(display, &[v2, v3, v4]))],
+            vertex_buffer: vb,
         })
     }
 }
@@ -86,10 +85,9 @@ pub struct Graphics<'a> {
     display: Display,
     program: Program,
     h_size : (f32, f32),
+    indices: IndexBuffer<u8>,
     params : DrawParameters<'a>
 }
-
-const INDICES: NoIndices = NoIndices(glium::index::PrimitiveType::TrianglesList);
 
 impl<'a> Graphics<'a> {
     /// Creates a new `Graphics` from a `Display` made using the arguments
@@ -146,11 +144,14 @@ impl<'a> Graphics<'a> {
             .. Default::default()
         };
 
+        let indices = IndexBuffer::new(&display, glium::index::PrimitiveType::TriangleStrip, &[0u8, 1, 3, 2]).unwrap();
+
         Graphics{
             // Unwrap should be safe
             program: Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap(),
             display: display,
             params : params,
+            indices: indices,
             h_size : (w, h)
         }
     }
@@ -180,11 +181,7 @@ fn draw(target: &mut glium::Frame, graphics: &Graphics, texture: &Texture, matri
         matrix: matrix
     };
 
-    for vertex_buffer in &texture.vertex_buffers{
-        try!(target.draw(vertex_buffer, INDICES, &graphics.program, &uniforms, &graphics.params));
-    }
-
-    Ok(())
+    target.draw(&texture.vertex_buffer, &graphics.indices, &graphics.program, &uniforms, &graphics.params)
 }
 
 impl<'a> Deref for Graphics<'a>{
