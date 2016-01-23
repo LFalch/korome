@@ -4,18 +4,18 @@ extern crate korome;
 use korome::*;
 
 fn main() {
-    // Create a draw object, which creates a window with the given title and dimensions
-    let draw = Draw::new("Just a single static texture", 800, 600);
+    // Create a Graphics object, which creates a window with the given title and dimensions
+    let graphics = Graphics::new("Just a single static texture", 800, 600);
 
-    // Load a texture, whose bytes have been loaded at compile-time with the given dimensions
-    let texture = include_texture!(draw, "planet.png", 64, 64).unwrap();
+    // Load a texture, whose bytes have been loaded at compile-time
+    let texture = include_texture!(graphics, "planet.png").unwrap();
 
-    // Create a game object with an empty logic function
-    // and a render function that draws the texture unrotatedly in the middle of the window
-    let game = Game::new(draw, |_, _| {}, |_, mut args|{
-        args.draw_texture(&texture, 0., 0., 0.).unwrap();
-    });
+    // Create a GameManager with the Graphics object
+    let mut gm = GameManager::new(graphics);
 
     // Run the game until the window is closed.
-    game.run_until_closed();
+    while let Some((_, mut drawer)) = gm.next_frame() {
+        drawer.clear(0.1, 0., 1.);
+        drawer.draw_texture_rigid(&texture, 0., 0.).unwrap();
+    }
 }
