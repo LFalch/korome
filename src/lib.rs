@@ -9,11 +9,11 @@ extern crate image;
 extern crate quick_error;
 
 mod draw;
-mod game;
+mod logic;
 mod vector;
 
-pub use draw::{Draw, Texture};
-pub use game::{Game, Sprite, LogicArgs, RenderArgs, VirtualKeyCode};
+pub use draw::{Graphics, Texture, Drawer, Draw};
+pub use logic::{GameManager, Update, FrameInfo, VirtualKeyCode, MouseButton};
 pub use vector::{Vector2, FloatVector};
 
 /// Result type for `korome::TextureError`
