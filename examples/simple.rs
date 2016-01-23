@@ -10,7 +10,7 @@ fn main() {
     // Load a texture, whose bytes have been loaded at compile-time
     let texture = include_texture!(graphics, "planet.png").unwrap();
 
-    // Create a game object with the draw instance
+    // Create a GameManager with the Graphics object
     let mut gm = GameManager::new(graphics);
 
     // Run the game until the window is closed.
