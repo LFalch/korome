@@ -142,6 +142,6 @@ pub trait Update{
 #[macro_export]
 macro_rules! is_down{
     ( $info:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {{
-        $( if $( $info.is_down(&::korome::VirtualKeyCode::$key) )||+ $b )+
+        $( if $( $info.is_down(&$crate::VirtualKeyCode::$key) )||+ $b )+
     }}
 }

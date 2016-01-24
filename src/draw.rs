@@ -36,7 +36,8 @@ pub struct Texture{
 
 impl Texture {
     #[inline]
-    fn from_png_bytes(display: &Display, bytes: &[u8]) -> TextureResult<Texture>{
+    /// Creates a `Texture` from a PNG-encoded byte slice
+    pub fn from_png_bytes(display: &Display, bytes: &[u8]) -> TextureResult<Texture>{
         Texture::new(display,
             try!(
                 image::load_from_memory_with_format(bytes, image::PNG)
@@ -44,7 +45,8 @@ impl Texture {
         )
     }
     #[inline]
-    fn from_file<P: AsRef<Path>>(display: &Display, path: P) -> TextureResult<Texture>{
+    /// Creates a `Texture` from a file
+    pub fn from_file<P: AsRef<Path>>(display: &Display, path: P) -> TextureResult<Texture>{
         Texture::new(display,
             try!(
                 image::open(path)
@@ -52,7 +54,8 @@ impl Texture {
         )
     }
 
-    fn new(display: &Display, image: image::RgbaImage) -> TextureResult<Texture>{
+    /// Creates a `Texture` from an `image::RgbaImage`
+    pub fn new(display: &Display, image: image::RgbaImage) -> TextureResult<Texture>{
         let (width, height) = image.dimensions();
         let image = glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), (width, height));
 
@@ -75,8 +78,8 @@ impl Texture {
 /// Loads a texture, by loading the bytes at compile-time
 #[macro_export]
 macro_rules! include_texture {
-    ($draw:expr, $texture:tt) => {
-        $draw.load_texture_from_bytes(include_bytes!($texture))
+    ($graphics:expr, $texture:tt) => {
+        $crate::Texture::from_png_bytes(&$graphics, include_bytes!($texture))
     };
 }
 
@@ -165,12 +168,14 @@ impl<'a> Graphics<'a> {
 
     #[inline]
     /// Returns a `Texture` created from a PNG-encoded byte slice
+    /// DEPRECATED: Use `Texture::from_png_bytes`
     pub fn load_texture_from_bytes(&self, bytes: &[u8]) -> TextureResult<Texture> {
         Texture::from_png_bytes(&self.display, bytes)
     }
 
     #[inline]
     /// Returns a `Texture` created from a file
+    /// DEPRECATED: Use `Texture::from_file`
     pub fn load_texture_from_file<P: AsRef<Path>>(&self, path: P) -> TextureResult<Texture> {
         Texture::from_file(&self.display, path)
     }
