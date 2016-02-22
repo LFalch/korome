@@ -2,6 +2,19 @@
 name = "korome"
 version = "0.9.1"
 authors = ["LFalch <lucas@wasd.dk>"]
+description="WIP game engine using glium"
+documentation="http://lfalch.github.io/korome/korome/"
+repository="https://github.com/LFalch/korome"
+homepage="https://github.com/LFalch/korome"
+readme="README.md"
+keywords=["gamedev"]
+license="GPL-2.0"
+exclude = [
+    "Makefile",
+    ".gitignore",
+    "README.md",
+    ".travis.yml",
+]
 
 [dependencies]
 glium = "0.13"
