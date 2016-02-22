@@ -4,8 +4,8 @@ A game engine in Rust (previously Java) using [glium](https://github.com/tomaka/
 
 To use korome, add this to your Cargo.toml:
 ```toml
-[dependencies.korome]
-git = "https://github.com/LFalch/korome.git"
+[dependencies]
+korome = "0.9"
 ```
 
 Though right now, this crate is very unstable, and will probably be changing all the time.
