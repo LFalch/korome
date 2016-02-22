@@ -1,6 +1,3 @@
-extern crate glium;
-extern crate time;
-
 use std::collections::HashSet;
 
 use super::{Graphics, Drawer};

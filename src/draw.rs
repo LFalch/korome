@@ -1,9 +1,11 @@
-extern crate glium;
-extern crate image;
+use image;
+use image::RgbaImage;
 
 use glium::{DisplayBuild, VertexBuffer, Program, DrawParameters, Display, Surface};
-use glium::texture::Texture2d;
-use glium::IndexBuffer;
+use glium::{IndexBuffer, Frame, Blend};
+use glium::index::PrimitiveType;
+use glium::texture::{Texture2d, RawImage2d};
+use glium::glutin::WindowBuilder;
 
 use std::path::Path;
 use std::ops::{Deref, DerefMut};
@@ -55,9 +57,9 @@ impl Texture {
     }
 
     /// Creates a `Texture` from an `image::RgbaImage`
-    pub fn new(display: &Display, image: image::RgbaImage) -> TextureResult<Texture>{
+    pub fn new(display: &Display, image: RgbaImage) -> TextureResult<Texture>{
         let (width, height) = image.dimensions();
-        let image = glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), (width, height));
+        let image = RawImage2d::from_raw_rgba_reversed(image.into_raw(), (width, height));
 
         let (w, h) = (width as f32 / 2.0, height as f32 / 2.0);
 
@@ -96,7 +98,7 @@ impl<'a> Graphics<'a> {
     /// Creates a new `Graphics` from a `Display` made using the arguments
     pub fn new(title: &str, width: u32, height: u32) -> Self {
         Self::from_display(
-            glium::glutin::WindowBuilder::new()
+            WindowBuilder::new()
                 .with_title(title.to_string())
                 .with_dimensions(width, height)
                 .with_vsync()
@@ -144,11 +146,11 @@ impl<'a> Graphics<'a> {
         "#;
 
         let params = DrawParameters{
-            blend : glium::Blend::alpha_blending(),
+            blend : Blend::alpha_blending(),
             .. Default::default()
         };
 
-        let indices = IndexBuffer::new(&display, glium::index::PrimitiveType::TriangleStrip, &[0u8, 1, 3, 2]).unwrap();
+        let indices = IndexBuffer::new(&display, PrimitiveType::TriangleStrip, &[0u8, 1, 3, 2]).unwrap();
 
         Graphics{
             // Unwrap should be safe
@@ -187,7 +189,7 @@ pub fn resize(graphics: &mut Graphics, width: u32, height: u32){
     graphics.h_size = (width as f32 / 2.0, height as f32 / 2.0);
 }
 
-fn draw(target: &mut glium::Frame, graphics: &Graphics, texture: &Texture, matrix: [[f32; 4]; 4]) -> DrawResult<()>{
+fn draw(target: &mut Frame, graphics: &Graphics, texture: &Texture, matrix: [[f32; 4]; 4]) -> DrawResult<()>{
     let uniforms = uniform! {
         h_size: graphics.h_size,
         tex   : &texture.tex,
@@ -209,7 +211,7 @@ impl<'a> Deref for Graphics<'a>{
 /// Provides functionality for drawing.
 /// Can also be dereferenced into a `glium::Frame`.
 pub struct Drawer<'a>{
-    target: glium::Frame,
+    target: Frame,
     /// Reference to the draw instance
     pub graphics: &'a Graphics<'a>
 }
@@ -259,16 +261,16 @@ impl<'a> Drawer<'a>{
 }
 
 impl<'a> Deref for Drawer<'a>{
-    type Target = glium::Frame;
+    type Target = Frame;
     #[inline]
-    fn deref(&self) -> &glium::Frame{
+    fn deref(&self) -> &Frame{
         &self.target
     }
 }
 
 impl<'a> DerefMut for Drawer<'a>{
     #[inline]
-    fn deref_mut(&mut self) -> &mut glium::Frame{
+    fn deref_mut(&mut self) -> &mut Frame{
         &mut self.target
     }
 }
