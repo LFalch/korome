@@ -71,8 +71,8 @@ impl<'a> GameManager<'a>{
 
         let update = FrameInfo{
             delta    : delta,
-            keyevents: keys,
-            mouseevents: mouses,
+            key_events: keys,
+            mouse_events: mouses,
             down_keys: &self.down_keys,
             mousepos : self.mousepos
         };
@@ -88,8 +88,8 @@ pub struct FrameInfo<'a>{
     pub delta: f64,
     /// The last position of the mouse on the screen
     pub mousepos: (f32, f32),
-    mouseevents: Vec<(bool, MouseButton)>,
-    keyevents: Vec<(bool, VirtualKeyCode)>,
+    mouse_events: Vec<(bool, MouseButton)>,
+    key_events: Vec<(bool, VirtualKeyCode)>,
 
     // All keys that are pressed down
     down_keys: &'a HashSet<VirtualKeyCode>
@@ -99,12 +99,12 @@ impl<'a> FrameInfo<'a>{
     #[inline]
     /// Returns a slice of all key events that have happened
     pub fn get_key_events(&self) -> &[(bool, VirtualKeyCode)]{
-        &self.keyevents
+        &self.key_events
     }
     #[inline]
     /// Returns a slice of all key events that have happened
     pub fn get_mouse_events(&self) -> &[(bool, MouseButton)]{
-        &self.mouseevents
+        &self.mouse_events
     }
     #[inline]
     /// Checks whether a key is pressed down
