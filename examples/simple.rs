@@ -14,8 +14,31 @@ fn main() {
     let mut gm = GameManager::new(graphics);
 
     // Run the game until the window is closed.
+    gm.run(Box::new(Simple{
+        texture: texture
+    }))
+
+    /*
     while let Some((_, mut drawer)) = gm.next_frame() {
         drawer.clear(0.1, 0., 1.);
         drawer.draw_texture_rigid(&texture, 0., 0.).unwrap();
+    }
+    */
+}
+
+pub struct Simple{
+    texture: Texture
+}
+
+impl State for Simple{
+    fn frame(&mut self, frame: Option<(FrameInfo, Drawer)>) -> StateChange{
+        match frame{
+            Some((_, mut drawer)) => {
+                drawer.clear(0.1, 0., 1.);
+                drawer.draw_texture_rigid(&self.texture, 0., 0.).unwrap();
+                StateChange::No
+            },
+            None => StateChange::Close
+        }
     }
 }

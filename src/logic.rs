@@ -8,6 +8,14 @@ use glium::glutin::{Event, ElementState};
 
 pub use glium::glutin::{VirtualKeyCode, MouseButton};
 
+pub trait State{
+    fn frame(&mut self, Option<(FrameInfo, Drawer)>) -> StateChange;
+}
+
+pub enum StateChange{
+    No, New(Box<State>), Close
+}
+
 /// Manages events and frames
 pub struct GameManager<'a>{
     graphics: Graphics<'a>,
@@ -25,6 +33,19 @@ impl<'a> GameManager<'a>{
             last: time_s(),
             mousepos: (0., 0.),
             down_keys: HashSet::new()
+        }
+    }
+
+    /// Runs the game with the specified initial state
+    pub fn run(&mut self, initial_state: Box<State>){
+        let mut current_state = initial_state;
+
+        loop{
+            match current_state.frame(self.next_frame()){
+                StateChange::No => (),
+                StateChange::Close => break,
+                StateChange::New(new_state) => current_state = new_state,
+            }
         }
     }
 

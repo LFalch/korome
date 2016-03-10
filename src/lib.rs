@@ -13,7 +13,7 @@ mod logic;
 mod vector;
 
 pub use draw::{Graphics, Texture, Drawer, Draw};
-pub use logic::{GameManager, Update, FrameInfo, VirtualKeyCode, MouseButton};
+pub use logic::{GameManager, Update, FrameInfo, VirtualKeyCode, MouseButton, StateChange, State};
 pub use vector::{Vector2, FloatVector};
 
 /// Result type for `korome::TextureError`
