@@ -51,9 +51,8 @@ impl<'a> GameManager<'a>{
                 Event::MouseMoved(pos) => {
                     let (w, h) = self.graphics.get_h_size();
                     let (x, y) = pos;
-                    let (x, y) = (x as f32 - w, h - y as f32);
 
-                    self.mousepos = (x, y);
+                    self.mousepos = (x as f32 - w, h - y as f32);
                 },
                 // This is only neccessary because `graphics` gets immutably borrowed for this for-loop
                 Event::Resized(w, h) => resized = Some((w, h)),
@@ -64,7 +63,7 @@ impl<'a> GameManager<'a>{
 
         if let Some((w, h)) = resized{
             resize(&mut self.graphics, w, h);
-        }drop(resized);
+        }
 
         let now = time_s();
         let delta = now - self.last;
