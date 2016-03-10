@@ -55,7 +55,7 @@ impl<'a> GameManager<'a>{
 
                     self.mousepos = (x, y);
                 },
-                // This is neccessary because `graphics` gets immutably borrowed for this for loop
+                // This is only neccessary because `graphics` gets immutably borrowed for this for-loop
                 Event::Resized(w, h) => resized = Some((w, h)),
                 Event::MouseInput(state, button) => mouses.push((state == ElementState::Pressed, button)),
                 _ => ()
