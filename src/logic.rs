@@ -16,7 +16,7 @@ pub trait State{
 
 /// Describes whether to change the state
 pub enum StateChange{
-    /// Says no to change the state
+    /// Says not to change the state
     No,
     /// Says to change the state to one specified
     New(Box<State>),
@@ -57,7 +57,10 @@ impl<'a> GameManager<'a>{
         }
     }
 
-    /// Returns some tuple of a `FrameInfo` and a ´Drawer` or None if the window has been closed
+    /// Returns some tuple of a `FrameInfo` and a `Drawer` or None if the window has been closed
+    ///
+    /// Note, that the window doesn't close before the `GameManager` is dropped,
+    /// so you can just run `next_frame` again after it has returned `None` to continue.
     pub fn next_frame(&mut self) -> Option<(FrameInfo, Drawer)>{
         let mut keys = Vec::new();
         let mut mouses = Vec::new();
