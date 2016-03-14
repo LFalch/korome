@@ -8,12 +8,20 @@ use glium::glutin::{Event, ElementState};
 
 pub use glium::glutin::{VirtualKeyCode, MouseButton};
 
+/// Describes specific ways to handle an update
 pub trait State{
+    /// Function that gets called each frame update, when this `State` is being run
     fn frame(&mut self, Option<(FrameInfo, Drawer)>) -> StateChange;
 }
 
+/// Describes whether to change the state
 pub enum StateChange{
-    No, New(Box<State>), Close
+    /// Says no to change the state
+    No,
+    /// Says to change the state to one specified
+    New(Box<State>),
+    /// Says to close the game
+    Close
 }
 
 /// Manages events and frames
