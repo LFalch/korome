@@ -4,13 +4,13 @@ extern crate korome;
 use korome::*;
 
 fn main() {
-    // Create the Graphics object, which creates a window with the given title and dimensions
+    // Create the `Graphics` object, which creates a window with the given title and dimensions
     let graphics = Graphics::new("korome works!", 800, 600);
 
     // Load a texture, whose bytes have been loaded at compile-time
     let planet = include_texture!(graphics, "planet.png").unwrap();
 
-    // Create a planet Object with the texture
+    // Create a planet object with the texture
     let mut planet = Object{
         tex: &planet,
         x: -400.,
@@ -21,12 +21,12 @@ fn main() {
     // Create the GameManager
     let mut gm = GameManager::new(graphics);
 
-    while let Some((info, mut drawer)) = gm.next_frame() {
+    gm.run_until_closed(|info, mut drawer| {
         planet.update(&info);
 
         drawer.clear(0., 0., 1.);
         planet.draw(&mut drawer).unwrap();
-    }
+    })
 }
 
 struct Object<'a>{

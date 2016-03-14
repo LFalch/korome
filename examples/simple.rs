@@ -13,9 +13,10 @@ fn main() {
     // Create a GameManager with the Graphics object
     let mut gm = GameManager::new(graphics);
 
-    // Run the game until the window is closed.
-    while let Some((_, mut drawer)) = gm.next_frame() {
+    // The first argument is ignored because
+    // this example doesn't need any `FrameInfo`
+    gm.run_until_closed(|_, mut drawer| {
         drawer.clear(0.1, 0., 1.);
         drawer.draw_texture_rigid(&texture, 0., 0.).unwrap();
-    }
+    })
 }

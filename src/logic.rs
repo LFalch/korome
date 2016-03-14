@@ -57,6 +57,13 @@ impl<'a> GameManager<'a>{
         }
     }
 
+    /// Runs the game until it gets closed
+    pub fn run_until_closed<F: FnMut(FrameInfo, Drawer)>(&mut self, mut f: F){
+        while let Some((frame_info, drawer)) = self.next_frame() {
+            f(frame_info, drawer)
+        }
+    }
+
     /// Returns some tuple of a `FrameInfo` and a `Drawer` or None if the window has been closed
     ///
     /// Note, that the window doesn't close before the `GameManager` is dropped,
