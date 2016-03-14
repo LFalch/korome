@@ -20,4 +20,4 @@ exclude = [
 glium = "0.13"
 image = "0.6"
 time  = "0.1"
-quick-error = "0.2.1"
+quick-error = "1.0.0"
