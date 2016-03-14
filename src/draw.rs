@@ -111,40 +111,6 @@ impl<'a> Graphics<'a> {
         let (w, h) = display.get_window().unwrap().get_inner_size().unwrap();
         let (w, h) = (w as f32 / 2.0, h as f32 / 2.0);
 
-        let vertex_shader_src = r#"
-            #version 140
-
-            in vec2 position;
-            in vec2 tex_coords;
-            out vec2 v_tex_coords;
-
-            uniform mat4 matrix;
-            uniform vec2 h_size;
-
-            void main() {
-                v_tex_coords = tex_coords;
-
-                vec4 pos = matrix * vec4(position, 0.0, 1.0);
-
-                pos.x /= h_size.x;
-                pos.y /= h_size.y;
-
-                gl_Position = pos;
-            }
-        "#;
-        let fragment_shader_src = r#"
-            #version 140
-
-            in vec2 v_tex_coords;
-            out vec4 color;
-
-            uniform sampler2D tex;
-
-            void main() {
-                color = texture(tex, v_tex_coords);
-            }
-        "#;
-
         let params = DrawParameters{
             blend : Blend::alpha_blending(),
             .. Default::default()
@@ -154,7 +120,7 @@ impl<'a> Graphics<'a> {
 
         Graphics{
             // Unwrap should be safe
-            program: Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap(),
+            program: Program::from_source(&display, include_str!("shaders/texture.vs"), include_str!("shaders/texture.fs"), None).unwrap(),
             display: display,
             params : params,
             indices: indices,
