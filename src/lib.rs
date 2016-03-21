@@ -1,8 +1,8 @@
-#![warn(missing_docs)]
-//! Abstraction over how a game can work
+#![warn(missing_docs, trivial_casts, trivial_numeric_casts)]
+//! A small game engine written in Rust.
 
 #[macro_use]
-extern crate glium;
+extern crate glium as glium_;
 extern crate time;
 extern crate image;
 #[macro_use]
@@ -11,6 +11,11 @@ extern crate quick_error;
 mod draw;
 mod logic;
 mod vector;
+
+/// Re-export of glium crate
+pub mod glium{
+    pub use glium_::*;
+}
 
 pub use draw::{Graphics, Texture, Drawer, Draw};
 pub use logic::{GameManager, Update, FrameInfo, VirtualKeyCode, MouseButton};
