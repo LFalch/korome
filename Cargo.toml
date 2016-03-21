@@ -1,6 +1,6 @@
 [package]
 name = "korome"
-version = "0.9.2"
+version = "0.9.3"
 authors = ["LFalch <lucas@wasd.dk>"]
 description="WIP game engine using glium"
 documentation="http://lfalch.github.io/korome/korome/"
