@@ -1,23 +1,30 @@
 language: rust
+
 rust:
-- stable
-- nightly
+  - stable
+  - nightly
 matrix:
   allow_failures:
-  - rust: nightly
+    - rust: nightly
 
-before_script:
-- |
-  pip install 'travis-cargo<0.2' --user &&
-  export PATH=$HOME/.local/bin:$PATH
-script:
-- |
-  travis-cargo build &&
-  travis-cargo test &&
-  travis-cargo --only stable doc
-after_success:
-- travis-cargo --only stable doc-upload
+addons:
+  apt:
+    packages:
+    - libxxf86vm-dev
+    - libosmesa6-dev
 env:
   global:
-  - TRAVIS_CARGO_NIGHTLY_FEATURE=nightly
-  - secure: WraI34cQSGtr6i0EIg+i+RcmzMiaDWhYpdLeE18WKFxeTX2rUubsvTWaBun0KhRBdix1ir20d0VARYZfDzz/3Z+0NbD3OnhYzVzOU2vCX5nnlctjk3rglraV8KJOn60jJbgRqvD8r0T2D9nbo1LgpzjkHveYEqmqWODhUdidf1INqnQzv2vKpmRhSzjg1lhMfVVbBxFPk9gKwN+Jj9NiOeHpqeuCX3UUl6DkRi+TYcdB5ierD18Lxcxii3wyihUT8O3diA1jbzcolsN7DdQ9skTF51ZFsSw716DPZB2++yxFE3vx0vssNTnZLfL6AdgAn+is0XAcFl0UmJkrlZh/NJ2fL3NZ2lUeQbSfbAuz7O5XjUP1BezO/zCXFjGt/wzPSfRs5/AP1ADPc4iWRwFu86W06xYHCIwGPaudTCFAezJinV+mII3oUHPl7zTlD/DuaiBabLVIJHHCMClTq2qe9WaZJgIYAHVSHvjlPU6kmhdHmYTLs8v2DGEOVmWxu+svSQGmCdOe+O6PmePMduG1fAZ5nZQAqO+HUI2p3CgKE6yENI7F1V6LsXvjVW9F0JriByKf/+poX3KaBnER0btR+dCCK6/X39RUm0pvVb1wJU8vnfHU6MRr2/Wz7U7gU1KEggZwkax/ID5JdU3teJ7YsxIwzRPHBfFiEWPBbOOS0zg=
+    - secure: WraI34cQSGtr6i0EIg+i+RcmzMiaDWhYpdLeE18WKFxeTX2rUubsvTWaBun0KhRBdix1ir20d0VARYZfDzz/3Z+0NbD3OnhYzVzOU2vCX5nnlctjk3rglraV8KJOn60jJbgRqvD8r0T2D9nbo1LgpzjkHveYEqmqWODhUdidf1INqnQzv2vKpmRhSzjg1lhMfVVbBxFPk9gKwN+Jj9NiOeHpqeuCX3UUl6DkRi+TYcdB5ierD18Lxcxii3wyihUT8O3diA1jbzcolsN7DdQ9skTF51ZFsSw716DPZB2++yxFE3vx0vssNTnZLfL6AdgAn+is0XAcFl0UmJkrlZh/NJ2fL3NZ2lUeQbSfbAuz7O5XjUP1BezO/zCXFjGt/wzPSfRs5/AP1ADPc4iWRwFu86W06xYHCIwGPaudTCFAezJinV+mII3oUHPl7zTlD/DuaiBabLVIJHHCMClTq2qe9WaZJgIYAHVSHvjlPU6kmhdHmYTLs8v2DGEOVmWxu+svSQGmCdOe+O6PmePMduG1fAZ5nZQAqO+HUI2p3CgKE6yENI7F1V6LsXvjVW9F0JriByKf/+poX3KaBnER0btR+dCCK6/X39RUm0pvVb1wJU8vnfHU6MRr2/Wz7U7gU1KEggZwkax/ID5JdU3teJ7YsxIwzRPHBfFiEWPBbOOS0zg=
+
+script:
+  - cargo build --verbose
+  - cargo test --verbose
+
+after_success:
+  - |
+      [ $TRAVIS_BRANCH = master ] &&
+      [ $TRAVIS_PULL_REQUEST = false ] &&
+      cargo doc &&
+      sudo pip install ghp-import &&
+      ghp-import -n target/doc &&
+      git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-page
