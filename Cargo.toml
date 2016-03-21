@@ -8,7 +8,7 @@ repository="https://github.com/LFalch/korome"
 homepage="https://github.com/LFalch/korome"
 readme="README.md"
 keywords=["gamedev"]
-license="GPL-2.0"
+license="Apache-2.0"
 exclude = [
     "Makefile",
     ".gitignore",
