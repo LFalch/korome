@@ -18,7 +18,7 @@ pub struct GameManager<'a>{
 
 impl<'a> GameManager<'a>{
     #[inline]
-    /// Creates a new `Game` from a `Graphics` object
+    /// Creates a new `GameManager` from a `Graphics` object
     pub fn new(graphics: Graphics<'a>) -> Self {
         GameManager{
             graphics: graphics,
@@ -28,7 +28,10 @@ impl<'a> GameManager<'a>{
         }
     }
 
-    /// Returns some tuple of a `FrameInfo` and a ´Drawer` or None if the window has been closed
+    /// Returns an optional tuple of a `FrameInfo` and a `Drawer` or `None`, if the window has been closed.
+    ///
+    /// The window doesn't actually close when `None` is returned; you can just
+    /// ignore it, and it will just keep running: The window only closes when the `GameManager` object is dropped.
     pub fn next_frame(&mut self) -> Option<(FrameInfo, Drawer)>{
         let mut keys = Vec::new();
         let mut mouses = Vec::new();
@@ -84,7 +87,7 @@ impl<'a> GameManager<'a>{
 /// Wraps together useful data about what has happened (e.g. events)
 #[derive(Debug)]
 pub struct FrameInfo<'a>{
-    /// The time that has passed since last frame
+    /// The amount of time passed since last frame
     pub delta: f64,
     /// The last position of the mouse on the screen
     pub mousepos: (f32, f32),

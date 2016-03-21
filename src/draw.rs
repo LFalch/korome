@@ -175,10 +175,11 @@ impl<'a> Deref for Graphics<'a>{
 }
 
 /// Provides functionality for drawing.
+///
 /// Can also be dereferenced into a `glium::Frame`.
 pub struct Drawer<'a>{
     target: Frame,
-    /// Reference to the draw instance
+    /// Reference to the `Graphics` object
     pub graphics: &'a Graphics<'a>
 }
 
@@ -250,6 +251,6 @@ impl<'a> Drop for Drawer<'a>{
 
 /// Descibes objects that can be drawn to the screen
 pub trait Draw {
-    /// Draws itself to the screen
+    /// Draw the object to the screen
     fn draw(&self, &mut Drawer) -> DrawResult<()>;
 }
