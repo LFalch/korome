@@ -133,20 +133,6 @@ impl<'a> Graphics<'a> {
     pub fn get_h_size(&self) -> (f32, f32){
         self.h_size
     }
-
-    #[inline]
-    /// Returns a `Texture` created from a PNG-encoded byte slice
-    /// DEPRECATED: Use `Texture::from_png_bytes`
-    pub fn load_texture_from_bytes(&self, bytes: &[u8]) -> TextureResult<Texture> {
-        Texture::from_png_bytes(&self.display, bytes)
-    }
-
-    #[inline]
-    /// Returns a `Texture` created from a file
-    /// DEPRECATED: Use `Texture::from_file`
-    pub fn load_texture_from_file<P: AsRef<Path>>(&self, path: P) -> TextureResult<Texture> {
-        Texture::from_file(&self.display, path)
-    }
 }
 
 #[inline(always)]
