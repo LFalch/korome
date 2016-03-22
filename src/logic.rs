@@ -11,6 +11,8 @@ pub use glium::glutin::{VirtualKeyCode, MouseButton};
 /// Describes a way to handle an update
 pub trait State{
     /// Function that gets called each frame update, when this `State` is being run
+    ///
+    /// Returns whether to do something after the update has been handled
     fn frame(&mut self, closed: bool, FrameInfo, Drawer) -> StateAction;
 }
 
@@ -20,9 +22,9 @@ impl<F> State for F where F: FnMut(bool, FrameInfo, Drawer) -> StateAction{
     }
 }
 
-/// Describes what to do after a frame updatre
+/// Describes what to do after a frame update
 pub enum StateAction{
-    /// Says to continue along without changing state
+    /// Says to continue without changing the state
     Continue,
     /// Says to change the state to the one specified
     ChangeTo(Box<State>),
