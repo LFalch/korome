@@ -51,14 +51,6 @@ impl<'a> GameManager<'a>{
             down_keys: HashSet::new()
         }
     }
-
-<<<<<<< HEAD
-    /// Returns an optional tuple of a `FrameInfo` and a `Drawer` or `None`, if the window has been closed.
-    ///
-    /// The window doesn't actually close when `None` is returned; you can just
-    /// ignore it, and it will just keep running: The window only closes when the `GameManager` object is dropped.
-    pub fn next_frame(&mut self) -> Option<(FrameInfo, Drawer)>{
-=======
     /// Runs the game with the specified initial state
     pub fn run(&mut self, initial_state: Box<State>){
         let mut current_state = initial_state;
@@ -84,7 +76,6 @@ impl<'a> GameManager<'a>{
     /// Returns a tuple of a `bool` (which is `true` if the user tried
     /// to close the window), a `FrameInfo` and a `Drawer`
     pub fn next_frame(&mut self) -> (bool, FrameInfo, Drawer){
->>>>>>> feauture-game-states
         let mut keys = Vec::new();
         let mut mouses = Vec::new();
         let mut closed = false;
