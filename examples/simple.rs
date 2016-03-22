@@ -8,7 +8,7 @@ fn main() {
     let graphics = Graphics::new("Just a single static texture", 800, 600);
 
     // Load a texture, whose bytes have been loaded at compile-time
-    let texture = include_texture!(graphics, "planet.png").unwrap();
+    let texture = include_texture!(graphics, "assets/planet.png").unwrap();
 
     // Create a GameManager with the Graphics object
     let mut gm = GameManager::new(graphics);

@@ -8,7 +8,7 @@ fn main() {
     let graphics = Graphics::new("korome works!", 800, 600);
 
     // Load a texture, whose bytes have been loaded at compile-time
-    let planet = include_texture!(graphics, "planet.png").unwrap();
+    let planet = include_texture!(graphics, "assets/planet.png").unwrap();
 
     // Create a planet object with the texture
     let mut planet = Object{

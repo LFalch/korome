@@ -8,18 +8,24 @@ use glium::glutin::{Event, ElementState};
 
 pub use glium::glutin::{VirtualKeyCode, MouseButton};
 
-/// Describes specific ways to handle an update
+/// Describes a way to handle an update
 pub trait State{
     /// Function that gets called each frame update, when this `State` is being run
-    fn frame(&mut self, Option<(FrameInfo, Drawer)>) -> StateChange;
+    fn frame(&mut self, closed: bool, FrameInfo, Drawer) -> StateAction;
 }
 
-/// Describes whether to change the state
-pub enum StateChange{
-    /// Says not to change the state
-    No,
-    /// Says to change the state to one specified
-    New(Box<State>),
+impl<F> State for F where F: FnMut(bool, FrameInfo, Drawer) -> StateAction{
+    fn frame(&mut self, c: bool, i: FrameInfo, d: Drawer) -> StateAction{
+        (self)(c, i, d)
+    }
+}
+
+/// Describes what to do after a frame updatre
+pub enum StateAction{
+    /// Says to continue along without changing state
+    Continue,
+    /// Says to change the state to the one specified
+    ChangeTo(Box<State>),
     /// Says to close the game
     Close
 }
@@ -49,34 +55,35 @@ impl<'a> GameManager<'a>{
         let mut current_state = initial_state;
 
         loop{
-            match current_state.frame(self.next_frame()){
-                StateChange::No => (),
-                StateChange::Close => break,
-                StateChange::New(new_state) => current_state = new_state,
+            let (c, fi, d) = self.next_frame();
+
+            match current_state.frame(c, fi, d){
+                StateAction::ChangeTo(new) => current_state = new,
+                StateAction::Continue      => (),
+                StateAction::Close         => break,
             }
         }
     }
 
-    /// Runs the game until it gets closed
+    /// Runs the game until the user tries to close the window
     pub fn run_until_closed<F: FnMut(FrameInfo, Drawer)>(&mut self, mut f: F){
-        while let Some((frame_info, drawer)) = self.next_frame() {
+        while let (false, frame_info, drawer) = self.next_frame() {
             f(frame_info, drawer)
         }
     }
 
-    /// Returns some tuple of a `FrameInfo` and a `Drawer` or None if the window has been closed
-    ///
-    /// Note, that the window doesn't close before the `GameManager` is dropped,
-    /// so you can just run `next_frame` again after it has returned `None` to continue.
-    pub fn next_frame(&mut self) -> Option<(FrameInfo, Drawer)>{
+    /// Returns a tuple of a `bool` (which is `true` if the user tried
+    /// to close the window), a `FrameInfo` and a `Drawer`
+    pub fn next_frame(&mut self) -> (bool, FrameInfo, Drawer){
         let mut keys = Vec::new();
         let mut mouses = Vec::new();
+        let mut closed = false;
 
         let mut resized = None::<(u32, u32)>;
 
         for ev in self.graphics.poll_events() {
             match ev {
-                Event::Closed => return None,
+                Event::Closed => closed = true,
                 Event::KeyboardInput(es, _, Some(vkc)) => match es{
                     ElementState::Pressed  => {
                         self.down_keys.insert( vkc);
@@ -116,7 +123,7 @@ impl<'a> GameManager<'a>{
             mousepos : self.mousepos
         };
 
-        Some((update, Drawer::new(&self.graphics)))
+        (closed, update, Drawer::new(&self.graphics))
     }
 }
 
