@@ -141,7 +141,7 @@ pub fn resize(graphics: &mut Graphics, width: u32, height: u32){
     graphics.h_size = (width as f32 / 2.0, height as f32 / 2.0);
 }
 
-fn draw(target: &mut Frame, graphics: &Graphics, texture: &Texture, matrix: [[f32; 4]; 4]) -> DrawResult<()>{
+fn draw(target: &mut Frame, graphics: &Graphics, texture: &Texture, matrix: [[f32; 4]; 4]) -> DrawResult{
     let uniforms = uniform! {
         h_size: graphics.h_size,
         tex   : &texture.tex,
@@ -187,7 +187,7 @@ impl<'a> Drawer<'a>{
     }
 
     /// Draws a texture onto the screen
-    pub fn draw_texture(&mut self, texture: &Texture, x: f32, y: f32, rotation: f32) -> DrawResult<()>{
+    pub fn draw_texture(&mut self, texture: &Texture, x: f32, y: f32, rotation: f32) -> DrawResult{
         let (sin, cos)  = rotation.sin_cos();
 
         let matrix = [
@@ -201,7 +201,7 @@ impl<'a> Drawer<'a>{
     }
 
     /// Draws a texture onto the screen without rotation
-    pub fn draw_texture_rigid(&mut self, texture: &Texture, x: f32, y: f32) -> DrawResult<()>{
+    pub fn draw_texture_rigid(&mut self, texture: &Texture, x: f32, y: f32) -> DrawResult{
         let matrix = [
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0],
@@ -238,5 +238,5 @@ impl<'a> Drop for Drawer<'a>{
 /// Descibes objects that can be drawn to the screen
 pub trait Draw {
     /// Draw the object to the screen
-    fn draw(&self, &mut Drawer) -> DrawResult<()>;
+    fn draw(&self, &mut Drawer) -> DrawResult;
 }

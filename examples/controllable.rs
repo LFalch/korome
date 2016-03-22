@@ -67,7 +67,7 @@ impl<'a> Update for Object<'a>{
 }
 
 impl<'a> Draw for Object<'a>{
-    fn draw(&self, drawer: &mut Drawer) -> DrawResult<()>{
+    fn draw(&self, drawer: &mut Drawer) -> DrawResult{
         drawer.draw_texture(self.tex, self.x, self.y, self.theta)
     }
 }
