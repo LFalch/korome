@@ -18,7 +18,6 @@ exclude = [
 ]
 
 [dependencies]
-glium = "0.13"
-image = "0.6"
-time  = "0.1"
+glium = "0.14"
+image = "0.9"
 quick-error = "1.0.0"

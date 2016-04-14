@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use super::{Graphics, Drawer};
 use draw::resize;
-use time::precise_time_s as time_s;
+use std::time::Instant;
 
 use glium::glutin::{Event, ElementState};
 
@@ -35,7 +35,7 @@ pub enum StateAction{
 /// Manages events and frames
 pub struct GameManager<'a>{
     graphics: Graphics<'a>,
-    last: f64,
+    last: Instant,
     down_keys: HashSet<VirtualKeyCode>,
     mousepos: (f32, f32),
 }
@@ -46,7 +46,7 @@ impl<'a> GameManager<'a>{
     pub fn new(graphics: Graphics<'a>) -> Self {
         GameManager{
             graphics: graphics,
-            last: time_s(),
+            last: Instant::now(),
             mousepos: (0., 0.),
             down_keys: HashSet::new()
         }
@@ -95,9 +95,8 @@ impl<'a> GameManager<'a>{
                         keys.push((false, vkc));
                     }
                 },
-                Event::MouseMoved(pos) => {
+                Event::MouseMoved(x, y) => {
                     let (w, h) = self.graphics.get_h_size();
-                    let (x, y) = pos;
 
                     self.mousepos = (x as f32 - w, h - y as f32);
                 },
@@ -112,9 +111,9 @@ impl<'a> GameManager<'a>{
             resize(&mut self.graphics, w, h);
         }
 
-        let now = time_s();
-        let delta = now - self.last;
-        self.last = now;
+        let dur = self.last.elapsed();
+        let delta = dur.as_secs() as f64 + dur.subsec_nanos() as f64 / 1e9;
+        self.last = Instant::now();
 
         let update = FrameInfo{
             delta    : delta,
