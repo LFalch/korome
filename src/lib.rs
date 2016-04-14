@@ -3,7 +3,6 @@
 
 #[macro_use]
 extern crate glium as glium_;
-extern crate time;
 extern crate image;
 #[macro_use]
 extern crate quick_error;

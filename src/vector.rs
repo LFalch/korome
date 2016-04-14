@@ -2,7 +2,7 @@
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Vector2<T>(pub T, pub T);
 
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, Div, Neg};
 use std::convert::From;
 
 /// Special methods for floating point vectors
@@ -99,6 +99,18 @@ impl<T: Sub<Output=T>> Sub for Vector2<T>{
 
     fn sub(self, rhs: Self) -> Self{
         Vector2(self.0 - rhs.0, self.1 - rhs.1)
+    }
+}
+
+impl<T: Add<Output=T> + Copy> AddAssign for Vector2<T>{
+    fn add_assign(&mut self, rhs: Self){
+        *self = *self + rhs
+    }
+}
+
+impl<T: Sub<Output=T> + Copy> SubAssign for Vector2<T>{
+    fn sub_assign(&mut self, rhs: Self){
+        *self = *self - rhs
     }
 }
 
