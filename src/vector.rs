@@ -102,15 +102,17 @@ impl<T: Sub<Output=T>> Sub for Vector2<T>{
     }
 }
 
-impl<T: Add<Output=T> + Copy> AddAssign for Vector2<T>{
+impl<T: AddAssign> AddAssign for Vector2<T>{
     fn add_assign(&mut self, rhs: Self){
-        *self = *self + rhs
+        self.0 += rhs.0;
+        self.1 += rhs.1;
     }
 }
 
-impl<T: Sub<Output=T> + Copy> SubAssign for Vector2<T>{
+impl<T: SubAssign> SubAssign for Vector2<T>{
     fn sub_assign(&mut self, rhs: Self){
-        *self = *self - rhs
+        self.0 -= rhs.0;
+        self.1 -= rhs.1;
     }
 }
 
