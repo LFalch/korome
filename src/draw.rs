@@ -85,6 +85,25 @@ macro_rules! include_texture {
     };
 }
 
+quick_error! {
+    /// Wraps together errors that could occur creating a `Graphics` context
+    #[derive(Debug)]
+    pub enum GraphicsCreationError{
+        /// A `glium::GliumCreationError<::glium::glutin::CreationError>`
+        WindowBuilderError(err: ::glium::GliumCreationError<::glium::glutin::CreationError>){
+            from()
+            cause(err)
+            description(err.description())
+        }
+        /// This shouldn't occur often
+        IndexBufferCreationError(err: ::glium::index::BufferCreationError){
+            from()
+            cause(err)
+            description(err.description())
+        }
+    }
+}
+
 /// Contains the display and handles most of the graphics
 pub struct Graphics<'a> {
     display: Display,
@@ -96,18 +115,18 @@ pub struct Graphics<'a> {
 
 impl<'a> Graphics<'a> {
     /// Creates a new `Graphics` from a `Display` made using the arguments
-    pub fn new(title: &str, width: u32, height: u32) -> Self {
-        Self::from_display(
-            WindowBuilder::new()
-                .with_title(title.to_string())
-                .with_dimensions(width, height)
-                .with_vsync()
-                .build_glium().expect("Failed to build the window")
-        )
+    pub fn new(title: &str, width: u32, height: u32) -> Result<Self, GraphicsCreationError> {
+        WindowBuilder::new()
+            .with_title(title.to_string())
+            .with_dimensions(width, height)
+            .with_vsync()
+            .build_glium()
+            .map_err(|e| e.into())
+            .and_then(|w| Self::from_display(w))
     }
 
     /// Creates a new `Graphics` instance using the given display
-    pub fn from_display(display: Display) -> Self {
+    pub fn from_display(display: Display) -> Result<Self, GraphicsCreationError> {
         let (w, h) = display.get_window().unwrap().get_inner_size().unwrap();
         let (w, h) = (w as f32 / 2.0, h as f32 / 2.0);
 
@@ -116,16 +135,16 @@ impl<'a> Graphics<'a> {
             .. Default::default()
         };
 
-        let indices = IndexBuffer::new(&display, PrimitiveType::TriangleStrip, &[0u8, 1, 3, 2]).unwrap();
+        let indices = try!(IndexBuffer::new(&display, PrimitiveType::TriangleStrip, &[0u8, 1, 3, 2]));
 
-        Graphics{
+        Ok(Graphics{
             // Unwrap should be safe
             program: Program::from_source(&display, include_str!("shaders/texture.vs"), include_str!("shaders/texture.fs"), None).unwrap(),
             display: display,
             params : params,
             indices: indices,
             h_size : (w, h)
-        }
+        })
     }
 
     #[inline]
@@ -173,9 +192,8 @@ impl<'a> Drawer<'a>{
     #[inline]
     /// Creates a new `Drawer` to draw next frame
     pub fn new(graphics: &'a Graphics<'a>) -> Self{
-        let target = graphics.draw();
         Drawer{
-            target: target,
+            target: graphics.draw(),
             graphics: graphics
         }
     }

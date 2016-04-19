@@ -5,7 +5,7 @@ use korome::*;
 
 fn main() {
     // Create the `Graphics` object, which creates a window with the given title and dimensions
-    let graphics = Graphics::new("korome works!", 800, 600);
+    let graphics = Graphics::new("korome works!", 800, 600).unwrap();
 
     // Load a texture, whose bytes have been loaded at compile-time
     let planet = include_texture!(graphics, "assets/planet.png").unwrap();

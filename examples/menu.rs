@@ -7,7 +7,7 @@ use korome::StateAction::*;
 use std::rc::Rc;
 
 fn main() {
-    let graphics = Graphics::new("Menu example!", 800, 600);
+    let graphics = Graphics::new("Menu example!", 800, 600).unwrap();
 
     let planet = Rc::new(include_texture!(graphics, "assets/planet.png").unwrap());
     let start_game = include_texture!(graphics, "assets/start_game.png").unwrap();
