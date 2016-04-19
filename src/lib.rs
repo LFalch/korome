@@ -21,7 +21,7 @@ pub use logic::{GameManager, Update, FrameInfo, VirtualKeyCode, MouseButton, Sta
 pub use vector::{Vector2, FloatVector};
 
 /// Result type for `korome::TextureError`
-pub type TextureResult<T> = Result<T, TextureError>;
+pub type TextureResult = Result<Texture, TextureError>;
 /// Result type for `glium::DrawError`
 pub type DrawResult = Result<(), glium::DrawError>;
 

@@ -39,7 +39,7 @@ pub struct Texture{
 impl Texture {
     #[inline]
     /// Creates a `Texture` from a PNG-encoded byte slice
-    pub fn from_png_bytes(display: &Display, bytes: &[u8]) -> TextureResult<Texture>{
+    pub fn from_png_bytes(display: &Display, bytes: &[u8]) -> TextureResult{
         Texture::new(display,
             try!(
                 image::load_from_memory_with_format(bytes, image::PNG)
@@ -48,7 +48,7 @@ impl Texture {
     }
     #[inline]
     /// Creates a `Texture` from a file
-    pub fn from_file<P: AsRef<Path>>(display: &Display, path: P) -> TextureResult<Texture>{
+    pub fn from_file<P: AsRef<Path>>(display: &Display, path: P) -> TextureResult{
         Texture::new(display,
             try!(
                 image::open(path)
@@ -57,7 +57,7 @@ impl Texture {
     }
 
     /// Creates a `Texture` from an `image::RgbaImage`
-    pub fn new(display: &Display, image: RgbaImage) -> TextureResult<Texture>{
+    pub fn new(display: &Display, image: RgbaImage) -> TextureResult{
         let (width, height) = image.dimensions();
         let image = RawImage2d::from_raw_rgba_reversed(image.into_raw(), (width, height));
 
