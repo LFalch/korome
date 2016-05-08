@@ -121,8 +121,8 @@ impl<'a> Graphics<'a> {
             .with_dimensions(width, height)
             .with_vsync()
             .build_glium()
-            .map_err(|e| e.into())
-            .and_then(|w| Self::from_display(w))
+            .map_err(Into::into)
+            .and_then(Self::from_display)
     }
 
     /// Creates a new `Graphics` instance using the given display
