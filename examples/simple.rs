@@ -11,12 +11,14 @@ fn main() {
     let texture = include_texture!(graphics, "assets/planet.png").unwrap();
 
     // Create a GameManager with the Graphics object
-    let mut gm = GameManager::new(graphics);
+    let gm = GameManager::new(graphics);
 
     // The first argument is ignored because
     // this example doesn't need any `FrameInfo`
-    gm.run_until_closed(|_, mut drawer| {
+    gm.run_until_closed(|_: FrameInfo, mut drawer: Drawer| {
         drawer.clear(0.1, 0., 1.);
         drawer.draw_texture_rigid(&texture, 0., 0.).unwrap();
+        
+        GameUpdate::nothing()
     })
 }
