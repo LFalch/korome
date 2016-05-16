@@ -2,7 +2,7 @@
 //! A small game engine written in Rust.
 
 #[macro_use]
-extern crate glium as glium_;
+extern crate glium;
 extern crate image;
 #[macro_use]
 extern crate quick_error;
@@ -11,9 +11,12 @@ mod draw;
 mod logic;
 mod vector;
 
-/// Re-export of glium crate
-pub mod glium{
-    pub use glium_::*;
+/// Re-exports of crates
+pub mod backend{
+    /// Re-export of glium crate
+    pub mod glium{
+        pub use ::glium::*;
+    }
 }
 
 pub use draw::{Graphics, Texture, Drawer, Draw};
