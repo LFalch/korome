@@ -8,6 +8,7 @@ fn main() {
 
     let planet = include_texture!(graphics, "assets/planet.png").unwrap();
     let start_game = include_texture!(graphics, "assets/start_game.png").unwrap();
+    let quit_game = include_texture!(graphics, "assets/quit_game.png").unwrap();
 
     let gm = GameManager::new(graphics);
     let mut state = 0;
@@ -18,11 +19,16 @@ fn main() {
 
         match state{
             0 => {
-                drawer.draw_texture_rigid(&start_game, 0., 0.).unwrap();
+                drawer.draw_texture_rigid(&start_game, 0., 35.).unwrap();
+                drawer.draw_texture_rigid(&quit_game, 0., -35.).unwrap();
 
                 for &e in info.get_mouse_events(){
-                    if let ((true, MouseButton::Left), (-100. ... 100., -25. ... 25.)) = (e, info.mousepos){
-                        state = 1;
+                    if let (true, MouseButton::Left) = e{
+                        match info.mousepos{
+                            (-100. ... 100., 10. ... 65.) => state = 1,
+                            (-100. ... 100., -65. ... -10.) => return GameUpdate::nothing().set_close(true),
+                            _ => ()
+                        }
                     }
                 }
             },

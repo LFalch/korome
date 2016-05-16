@@ -40,6 +40,14 @@ impl GameUpdate {
             _fill: ()
         }
     }
+
+    /// Set whether to close the game
+    pub fn set_close(self, close: bool) -> Self{
+        GameUpdate{
+            close: close,
+            .. self
+        }
+    }
 }
 
 /// Manages events and frames
