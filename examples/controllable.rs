@@ -18,15 +18,12 @@ fn main() {
         theta: 0.
     };
 
-    // Create the GameManager
-    let gm = GameManager::new(graphics);
-
-    gm.run_until_closed(|info: FrameInfo, mut drawer: Drawer| {
+    run_until_closed(graphics, |info: FrameInfo, mut drawer: Drawer| {
         planet.update(&info);
 
         drawer.clear(0., 0., 1.);
         planet.draw(&mut drawer).unwrap();
-        
+
         GameUpdate::nothing()
     })
 }

@@ -10,11 +10,10 @@ fn main() {
     let start_game = include_texture!(graphics, "assets/start_game.png").unwrap();
     let quit_game = include_texture!(graphics, "assets/quit_game.png").unwrap();
 
-    let gm = GameManager::new(graphics);
     let mut state = 0;
     let mut pos = Vector2(0., 0.);
 
-    gm.run_until_closed(|info: FrameInfo, mut drawer: Drawer|{
+    run_until_closed(graphics, |info: FrameInfo, mut drawer: Drawer|{
         drawer.clear(0., 0., 0.);
 
         match state{

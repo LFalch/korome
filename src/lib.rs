@@ -20,7 +20,7 @@ pub mod backend{
 }
 
 pub use draw::{Graphics, Texture, Drawer, Draw};
-pub use logic::{GameManager, Game, GameUpdate, Update, FrameInfo, VirtualKeyCode, MouseButton};
+pub use logic::{run_until_closed, Game, GameUpdate, Update, FrameInfo, VirtualKeyCode, MouseButton};
 pub use vector::{Vector2, FloatVector};
 
 /// Result type for `korome::TextureError`

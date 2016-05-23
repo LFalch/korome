@@ -50,77 +50,63 @@ impl GameUpdate {
     }
 }
 
-/// Manages events and frames
-pub struct GameManager<'a>{
-    graphics: Graphics<'a>,
-}
+/// Runs the game until the window is closed
+pub fn run_until_closed<G: Game>(mut graphics: Graphics, mut g: G){
+    let mut last = Instant::now();
+    let mut mousepos = (0., 0.);
+    let mut down_keys = HashSet::new();
 
-impl<'a> GameManager<'a>{
-    #[inline]
-    /// Creates a new `GameManager` from a `Graphics` object
-    pub fn new(graphics: Graphics<'a>) -> Self {
-        GameManager{
-            graphics: graphics,
+    'game: loop{
+        let mut keys = Vec::new();
+        let mut mouses = Vec::new();
+
+        let mut resized = None::<(u32, u32)>;
+
+        for ev in graphics.poll_events() {
+            match ev {
+                Event::Closed => break 'game,
+                Event::KeyboardInput(es, _, Some(vkc)) => match es{
+                    ElementState::Pressed  => {
+                        down_keys.insert( vkc);
+                        keys.push((true , vkc));
+                    },
+                    ElementState::Released => {
+                        down_keys.remove(&vkc);
+                        keys.push((false, vkc));
+                    }
+                },
+                Event::MouseMoved(x, y) => {
+                    let (w, h) = graphics.get_h_size();
+
+                    mousepos = (x as f32 - w, h - y as f32);
+                },
+                // This is only neccessary because `graphics` gets immutably borrowed for this for-loop
+                Event::Resized(w, h) => resized = Some((w, h)),
+                Event::MouseInput(state, button) => mouses.push((state == ElementState::Pressed, button)),
+                _ => ()
+            }
         }
-    }
-    /// Runs the game until the window is closed
-    pub fn run_until_closed<G: Game>(mut self, mut g: G){
-        let mut last = Instant::now();
-        let mut mousepos = (0., 0.);
-        let mut down_keys = HashSet::new();
 
-        'game: loop{
-            let mut keys = Vec::new();
-            let mut mouses = Vec::new();
+        if let Some((w, h)) = resized{
+            resize(&mut graphics, w, h);
+        }
 
-            let mut resized = None::<(u32, u32)>;
+        let dur = last.elapsed();
+        let delta = dur.as_secs() as f64 + dur.subsec_nanos() as f64 / 1e9;
+        last = Instant::now();
 
-            for ev in self.graphics.poll_events() {
-                match ev {
-                    Event::Closed => break 'game,
-                    Event::KeyboardInput(es, _, Some(vkc)) => match es{
-                        ElementState::Pressed  => {
-                            down_keys.insert( vkc);
-                            keys.push((true , vkc));
-                        },
-                        ElementState::Released => {
-                            down_keys.remove(&vkc);
-                            keys.push((false, vkc));
-                        }
-                    },
-                    Event::MouseMoved(x, y) => {
-                        let (w, h) = self.graphics.get_h_size();
+        let update = FrameInfo{
+            delta    : delta,
+            key_events: keys,
+            mouse_events: mouses,
+            down_keys: &down_keys,
+            mousepos : mousepos
+        };
 
-                        mousepos = (x as f32 - w, h - y as f32);
-                    },
-                    // This is only neccessary because `graphics` gets immutably borrowed for this for-loop
-                    Event::Resized(w, h) => resized = Some((w, h)),
-                    Event::MouseInput(state, button) => mouses.push((state == ElementState::Pressed, button)),
-                    _ => ()
-                }
-            }
+        let update = g.frame(update, Drawer::new(&graphics));
 
-            if let Some((w, h)) = resized{
-                resize(&mut self.graphics, w, h);
-            }
-
-            let dur = last.elapsed();
-            let delta = dur.as_secs() as f64 + dur.subsec_nanos() as f64 / 1e9;
-            last = Instant::now();
-
-            let update = FrameInfo{
-                delta    : delta,
-                key_events: keys,
-                mouse_events: mouses,
-                down_keys: &down_keys,
-                mousepos : mousepos
-            };
-
-            let update = g.frame(update, Drawer::new(&self.graphics));
-
-            if update.close{
-                break
-            }
+        if update.close{
+            break
         }
     }
 }
