@@ -143,12 +143,6 @@ impl<'a> FrameInfo<'a>{
     }
 }
 
-/// Describes objects that can change because of events
-pub trait Update{
-    /// Changes the object depending on what has happened
-    fn update(&mut self, &FrameInfo);
-}
-
 /// Macro for easily doing things if particular keys are down
 /// # Example
 ///

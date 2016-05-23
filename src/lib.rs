@@ -7,12 +7,14 @@ extern crate image;
 #[macro_use]
 extern crate quick_error;
 
+/// Module with an easy to use struct quick games with very simple logic
+pub mod easy;
 mod draw;
 mod logic;
 mod vector;
 
-pub use draw::{Graphics, Texture, Drawer, Draw};
-pub use logic::{run_until_closed, Game, GameUpdate, Update, FrameInfo, VirtualKeyCode, MouseButton};
+pub use draw::{Graphics, Texture, Drawer};
+pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
 pub use vector::{Vector2, FloatVector};
 
 /// Result type for `korome::TextureError`

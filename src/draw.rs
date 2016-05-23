@@ -252,9 +252,3 @@ impl<'a> Drop for Drawer<'a>{
         self.target.set_finish().unwrap()
     }
 }
-
-/// Descibes objects that can be drawn to the screen
-pub trait Draw {
-    /// Draw the object to the screen
-    fn draw(&self, &mut Drawer) -> DrawResult;
-}

@@ -2,6 +2,7 @@
 extern crate korome;
 
 use korome::*;
+use korome::easy::*;
 
 fn main() {
     // Create the `Graphics` object, which creates a window with the given title and dimensions
@@ -10,22 +11,17 @@ fn main() {
     // Load a texture, whose bytes have been loaded at compile-time
     let planet = include_texture!(graphics, "assets/planet.png").unwrap();
 
-    // Create a planet object with the texture
-    let mut planet = Object{
-        tex: &planet,
-        x: -400.,
-        y: 300.,
-        theta: 0.
-    };
+    // Create an `EasyGame` with a planet object using the texture
+    let g = EasyGame::with_vec(vec![
+        Object{
+            tex: &planet,
+            x: -400.,
+            y: 300.,
+            theta: 0.
+        }
+    ]);
 
-    run_until_closed(graphics, |info: FrameInfo, mut drawer: Drawer| {
-        planet.update(&info);
-
-        drawer.clear(0., 0., 1.);
-        planet.draw(&mut drawer).unwrap();
-
-        GameUpdate::nothing()
-    })
+    run_until_closed(graphics, g)
 }
 
 struct Object<'a>{
@@ -35,7 +31,7 @@ struct Object<'a>{
     tex: &'a Texture
 }
 
-impl<'a> Update for Object<'a>{
+impl<'a> Obj for Object<'a>{
     fn update(&mut self, info: &FrameInfo){
         let delta = info.delta as f32;
 
@@ -63,9 +59,6 @@ impl<'a> Update for Object<'a>{
             }
         }
     }
-}
-
-impl<'a> Draw for Object<'a>{
     fn draw(&self, drawer: &mut Drawer) -> DrawResult{
         drawer.draw_texture(self.tex, self.x, self.y, self.theta)
     }
