@@ -16,6 +16,7 @@ exclude = [
     ".travis.yml",
     "appveyor.yml"
 ]
+build = "build.rs"
 
 [dependencies]
 glium = "0.14"
@@ -25,3 +26,6 @@ quick-error = "1.0.0"
 version = "0.10"
 default-features = false
 features = ["png_codec"]
+
+[build-dependencies]
+glium = "0.14"
