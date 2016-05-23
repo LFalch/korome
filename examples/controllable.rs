@@ -59,7 +59,7 @@ impl<'a> Obj for Object<'a>{
             }
         }
     }
-    fn draw(&self, drawer: &mut Drawer) -> DrawResult{
-        drawer.draw_texture(self.tex, self.x, self.y, self.theta)
+    fn draw(&self, drawer: &mut Drawer){
+        drawer.draw_texture(self.tex, self.x, self.y, self.theta).unwrap()
     }
 }

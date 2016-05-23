@@ -1,13 +1,13 @@
 use std::ops::{Deref, DerefMut};
 
-use super::{Game, GameUpdate, FrameInfo, Drawer, DrawResult};
+use super::{Game, GameUpdate, FrameInfo, Drawer};
 
 /// Describes objects that can change because of events and be drawn to the screen
 pub trait Obj{
     /// Changes the object depending on what has happened
     fn update(&mut self, &FrameInfo);
     /// Draw the object to the screen
-    fn draw(&self, &mut Drawer) -> DrawResult;
+    fn draw(&self, &mut Drawer);
 }
 
 /// An easy to use implementation of a game
@@ -51,7 +51,7 @@ impl<T: Obj> Game for EasyGame<T>{
 
         for obj in &mut self.objects{
             obj.update(&info);
-            obj.draw(&mut drawer).unwrap();
+            obj.draw(&mut drawer);
         }
 
         GameUpdate::nothing()
