@@ -148,14 +148,14 @@ impl<'a> FrameInfo<'a>{
 ///
 /// ```rust
 // Sadly the macro has to written here again, becauase the example doesn't use macros from the crate
-/// # macro_rules! is_down{( $info:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {{$( if $( $info.is_down(&$crate::VirtualKeyCode::$key) )||+ $b )+}}}
-/// fn logic(player_y: &mut f32, info: korome::FrameInfo){
+/// # macro_rules! is_down{( $info:ident; $( $( $key:ident ),+ => $b:block ),+ ) => {{$( if $( $info.is_down(&korome::VirtualKeyCode::$key) )||+ $b )+}}}
+/// fn logic(player_y: &mut f64, info: korome::FrameInfo){
 ///     is_down!{info;
 ///         W, Up => {
-///             *player_y -= l_args.delta() as f32;
+///             *player_y -= info.delta
 ///         },
 ///         S, Down => {
-///             *player_y += l_args.delta() as f32;
+///             *player_y += info.delta
 ///         }
 ///     };
 /// }
