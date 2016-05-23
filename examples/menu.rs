@@ -3,6 +3,11 @@ extern crate korome;
 
 use korome::*;
 
+use State::*;
+enum State {
+    MainMenu, MainGame
+}
+
 fn main() {
     let graphics = Graphics::new("Menu example!", 800, 600).unwrap();
 
@@ -10,28 +15,28 @@ fn main() {
     let start_game = include_texture!(graphics, "assets/start_game.png").unwrap();
     let quit_game = include_texture!(graphics, "assets/quit_game.png").unwrap();
 
-    let mut state = 0;
+    let mut state = MainMenu;
     let mut pos = Vector2(0., 0.);
 
     run_until_closed(graphics, |info: FrameInfo, mut drawer: Drawer|{
         drawer.clear(0., 0., 0.);
 
         match state{
-            0 => {
+            MainMenu => {
                 drawer.draw_texture_rigid(&start_game, 0., 35.).unwrap();
                 drawer.draw_texture_rigid(&quit_game, 0., -35.).unwrap();
 
                 for &e in info.get_mouse_events(){
                     if let (true, MouseButton::Left) = e{
                         match info.mousepos{
-                            (-100. ... 100., 10. ... 65.) => state = 1,
+                            (-100. ... 100., 10. ... 65.) => state = MainGame,
                             (-100. ... 100., -65. ... -10.) => return GameUpdate::nothing().set_close(true),
                             _ => ()
                         }
                     }
                 }
             },
-            1 => {
+            MainGame => {
                 drawer.draw_texture_rigid(&planet, pos.0, pos.1).unwrap();
 
                 let vel = 100. * info.delta as f32;
@@ -50,8 +55,7 @@ fn main() {
                         pos.1 += vel
                     }
                 }
-            },
-            _ => unimplemented!()
+            }
         }
         GameUpdate::nothing()
     });
