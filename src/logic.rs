@@ -8,11 +8,11 @@ use glium::glutin::{Event, ElementState};
 
 pub use glium::glutin::{VirtualKeyCode, MouseButton};
 
-/// Methods the `GameManager` will call
+/// Methods `run_until_closed()` will call
 pub trait Game{
-    /// Method that gets each frame from the `GameManager`.
+    /// Method that gets called each frame from `run_until_closed()`.
     ///
-    /// Should return a `GameUpdate` specifying things the `GameManager` should do.
+    /// Should return a `GameUpdate` specifying things the game should do.
     fn frame(&mut self, FrameInfo, Drawer) -> GameUpdate;
 }
 
@@ -24,7 +24,7 @@ impl<F: FnMut(FrameInfo, Drawer) -> GameUpdate> Game for F{
 
 /// This is returned each frame from an object implementing `Game`.
 ///
-/// It describes anything the `GameManager` should do, like for example closing the game.
+/// It describes anything the game should do, e.g. closing the game.
 pub struct GameUpdate{
     /// Describes whether the game should be closed
     pub close: bool,
