@@ -5,7 +5,6 @@ use glium::{DisplayBuild, VertexBuffer, Program, DrawParameters, Display, Surfac
 use glium::{IndexBuffer, Frame, Blend};
 use glium::index::PrimitiveType;
 use glium::texture::{Texture2d, RawImage2d};
-use glium::program::Binary;
 use glium::glutin::WindowBuilder;
 
 use std::path::Path;
@@ -114,11 +113,6 @@ pub struct Graphics<'a> {
     params : DrawParameters<'a>
 }
 
-#[inline(always)]
-fn get_program_binary() -> Binary {
-    include!(concat!(env!("OUT_DIR"), "/binary.in.rs"))
-}
-
 impl<'a> Graphics<'a> {
     /// Creates a new `Graphics` from a `Display` made using the arguments
     pub fn new(title: &str, width: u32, height: u32) -> Result<Self, GraphicsCreationError> {
@@ -145,7 +139,7 @@ impl<'a> Graphics<'a> {
 
         Ok(Graphics{
             // Unwrap should be safe
-            program: Program::new(&display, get_program_binary()).unwrap(),
+            program: Program::from_source(&display, include_str!("shaders/texture.vs"), include_str!("shaders/texture.fs"), None).unwrap(),
             display: display,
             params : params,
             indices: indices,
