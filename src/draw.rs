@@ -234,6 +234,7 @@ impl<'a> Drop for Drawer<'a>{
 }
 
 /// Object for drawing textures to the screen using the builder pattern
+#[must_use = "`TextureDrawer` is lazy and does nothing until consumed"]
 pub struct TextureDrawer<'a>{
     /// The position on the screen where the texture will be drawn
     pub pos: (f32, f32),
