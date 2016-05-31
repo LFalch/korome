@@ -160,16 +160,6 @@ pub fn resize(graphics: &mut Graphics, width: u32, height: u32){
     graphics.h_size = (width as f32 / 2.0, height as f32 / 2.0);
 }
 
-fn draw(target: &mut Frame, graphics: &Graphics, texture: &Texture, matrix: [[f32; 4]; 4]) -> DrawResult{
-    let uniforms = uniform! {
-        h_size: graphics.h_size,
-        tex   : &texture.tex,
-        matrix: matrix
-    };
-
-    target.draw(&texture.vertex_buffer, &graphics.indices, &graphics.program, &uniforms, &graphics.params)
-}
-
 impl<'a> Deref for Graphics<'a>{
     type Target = Display;
 
@@ -190,7 +180,7 @@ pub struct Drawer<'a>{
 
 impl<'a> Drawer<'a>{
     #[inline]
-    /// Creates a new `Drawer` to draw next frame
+    /// Creates a new `Drawer` to draw the next frame
     pub fn new(graphics: &'a Graphics<'a>) -> Self{
         Drawer{
             target: graphics.draw(),
@@ -203,31 +193,21 @@ impl<'a> Drawer<'a>{
     pub fn clear(&mut self, red: f32, green: f32, blue: f32){
         self.clear_color(red, green, blue, 1.)
     }
-
     /// Draws a texture onto the screen
+    #[deprecated(since = "0.11.1", note="use Drawer::texture() instead")]
+    #[inline]
     pub fn draw_texture(&mut self, texture: &Texture, x: f32, y: f32, rotation: f32) -> DrawResult{
-        let (sin, cos)  = rotation.sin_cos();
-
-        let matrix = [
-            [ cos, sin, 0.0, 0.0],
-            [-sin, cos, 0.0, 0.0],
-            [ 0.0, 0.0, 1.0, 0.0],
-            [   x,   y, 0.0, 1.0],
-        ];
-
-        draw(self, self.graphics, texture, matrix)
+        self.texture(texture).pos((x, y)).rotation(rotation).draw()
     }
-
     /// Draws a texture onto the screen without rotation
+    #[deprecated(since = "0.11.1", note="use Drawer::texture() instead")]
+    #[inline]
     pub fn draw_texture_rigid(&mut self, texture: &Texture, x: f32, y: f32) -> DrawResult{
-        let matrix = [
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [  x,   y, 0.0, 1.0],
-        ];
-
-        draw(self, self.graphics, texture, matrix)
+        self.texture(texture).pos((x, y)).draw()
+    }
+    /// Returns an object for drawing texture to the screen
+    pub fn texture<'b>(&'b mut self, texture: &'b Texture) -> TextureDrawer<'b>{
+        TextureDrawer::new(self, self.graphics, texture)
     }
 }
 
@@ -250,5 +230,73 @@ impl<'a> Drop for Drawer<'a>{
     #[inline]
     fn drop(&mut self){
         self.target.set_finish().unwrap()
+    }
+}
+
+/// Object for drawing textures to the screen using the builder pattern
+pub struct TextureDrawer<'a>{
+    /// The position on the screen where the texture will be drawn
+    pub pos: (f32, f32),
+    sin_cos: (f32, f32),
+    /// The colour the texture will drawn with
+    pub colour: [f32; 4],
+    target: &'a mut Frame,
+    graphics: &'a Graphics<'a>,
+    texture: &'a Texture
+}
+
+impl<'a> TextureDrawer<'a> {
+    #[inline(always)]
+    fn new(target: &'a mut Frame, graphics: &'a Graphics, texture: &'a Texture) -> Self {
+        TextureDrawer{
+            pos: (0., 0.),
+            sin_cos: (0., 1.),
+            colour: [1., 1., 1., 1.],
+            target: target,
+            graphics: graphics,
+            texture: texture
+        }
+    }
+    /// Sets the position the texture will be drawn at
+    #[inline]
+    pub fn pos(self, pos: (f32, f32)) -> Self{
+        TextureDrawer{
+            pos: pos,
+            .. self
+        }
+    }
+    /// Sets the colours the texture will be drawn with
+    #[inline]
+    pub fn colour(self, colour: [f32; 4]) -> Self{
+        TextureDrawer{
+            colour: colour,
+            .. self
+        }
+    }
+    #[inline]
+    /// Sets the rotation of the texture to be drawn on the screen
+    pub fn rotation(self, rot: f32) -> Self{
+        TextureDrawer{
+            sin_cos: rot.sin_cos(),
+            .. self
+        }
+    }
+    /// Consumes self and draws the texture to the screen with the given options
+    pub fn draw(self) -> Result<(), ::glium::DrawError>{
+        let TextureDrawer{pos: (x, y), sin_cos: (sin, cos), colour, target, graphics, texture} = self;
+
+        let uniforms = uniform! {
+            h_size: graphics.h_size,
+            tex   : &texture.tex,
+            colour: colour,
+            matrix: [
+                [ cos, sin, 0., 0.],
+                [-sin, cos, 0., 0.],
+                [  0.,  0., 1., 0.],
+                [  x ,  y , 0., 1.],
+            ]
+        };
+
+        target.draw(&texture.vertex_buffer, &graphics.indices, &graphics.program, &uniforms, &graphics.params)
     }
 }

@@ -60,6 +60,11 @@ impl<'a> Obj for Object<'a>{
         }
     }
     fn draw(&self, drawer: &mut Drawer){
-        drawer.draw_texture(self.tex, self.x, self.y, self.theta).unwrap()
+        drawer.texture(self.tex)
+            .pos((self.x, self.y))
+            .rotation(self.theta)
+            .colour([0., 0., 0., 0.5])
+            .draw()
+            .unwrap()
     }
 }

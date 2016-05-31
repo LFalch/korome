@@ -14,7 +14,7 @@ fn main() {
     // this example doesn't need any `FrameInfo`
     run_until_closed(graphics, |_: FrameInfo, mut drawer: Drawer| {
         drawer.clear(0.1, 0., 1.);
-        drawer.draw_texture_rigid(&texture, 0., 0.).unwrap();
+        drawer.texture(&texture).draw().unwrap();
 
         GameUpdate::nothing()
     })
