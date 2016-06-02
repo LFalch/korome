@@ -10,7 +10,7 @@ use glium::glutin::WindowBuilder;
 use std::path::Path;
 use std::ops::{Deref, DerefMut};
 
-use super::{DrawResult, TextureResult};
+use super::TextureResult;
 
 #[derive(Copy, Clone)]
 struct Vertex {
@@ -193,18 +193,6 @@ impl<'a> Drawer<'a>{
     pub fn clear(&mut self, red: f32, green: f32, blue: f32){
         self.clear_color(red, green, blue, 1.)
     }
-    /// Draws a texture onto the screen
-    #[deprecated(since = "0.11.1", note="use Drawer::texture() instead")]
-    #[inline]
-    pub fn draw_texture(&mut self, texture: &Texture, x: f32, y: f32, rotation: f32) -> DrawResult{
-        self.texture(texture).pos((x, y)).rotation(rotation).draw()
-    }
-    /// Draws a texture onto the screen without rotation
-    #[deprecated(since = "0.11.1", note="use Drawer::texture() instead")]
-    #[inline]
-    pub fn draw_texture_rigid(&mut self, texture: &Texture, x: f32, y: f32) -> DrawResult{
-        self.texture(texture).pos((x, y)).draw()
-    }
     /// Returns an object for drawing texture to the screen
     pub fn texture<'b>(&'b mut self, texture: &'b Texture) -> TextureDrawer<'b>{
         TextureDrawer::new(self, self.graphics, texture)
@@ -283,7 +271,7 @@ impl<'a> TextureDrawer<'a> {
         }
     }
     /// Consumes self and draws the texture to the screen with the given options
-    pub fn draw(self) -> Result<(), ::glium::DrawError>{
+    pub fn draw(self){
         let TextureDrawer{pos: (x, y), sin_cos: (sin, cos), colour, target, graphics, texture} = self;
 
         let uniforms = uniform! {
@@ -298,6 +286,8 @@ impl<'a> TextureDrawer<'a> {
             ]
         };
 
+        // If this panics, it is a problem with korome
         target.draw(&texture.vertex_buffer, &graphics.indices, &graphics.program, &uniforms, &graphics.params)
+            .expect("draw failed")
     }
 }

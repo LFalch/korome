@@ -19,8 +19,6 @@ pub use vector::{Vector2, FloatVector};
 
 /// Result type for `korome::TextureError`
 pub type TextureResult = Result<Texture, TextureError>;
-/// Result type for `glium::DrawError`
-pub type DrawResult = Result<(), glium::DrawError>;
 
 quick_error! {
     /// Wraps together all errors that can occur creating `Texture`s

@@ -65,6 +65,5 @@ impl<'a> Obj for Object<'a>{
             .rotation(self.theta)
             .colour([0., 0., 0., 0.5])
             .draw()
-            .unwrap()
     }
 }
