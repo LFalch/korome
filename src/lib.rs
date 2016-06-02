@@ -13,7 +13,7 @@ mod draw;
 mod logic;
 mod vector;
 
-pub use draw::{Graphics, Texture, Drawer, TextureDrawer};
+pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Rect, RectDrawer};
 pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
 pub use vector::{Vector2, FloatVector};
 

@@ -3,6 +3,7 @@ use image::RgbaImage;
 
 use glium::{DisplayBuild, VertexBuffer, Program, DrawParameters, Display, Surface};
 use glium::{IndexBuffer, Frame, Blend};
+use glium::draw_parameters::Smooth;
 use glium::index::PrimitiveType;
 use glium::texture::{Texture2d, RawImage2d};
 use glium::glutin::WindowBuilder;
@@ -26,6 +27,24 @@ impl Vertex{
         Vertex{
             position  : position,
             tex_coords: tex_coords,
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+struct RectVertex {
+    index: u32,
+    position: [f32; 2]
+}
+
+implement_vertex!(RectVertex, index, position);
+
+impl RectVertex{
+    #[inline]
+    fn new(i: u32, x: f32, y: f32) -> Self{
+        RectVertex{
+            index: i,
+            position: [x, y]
         }
     }
 }
@@ -108,6 +127,7 @@ quick_error! {
 pub struct Graphics<'a> {
     display: Display,
     program: Program,
+    rect_program: Program,
     h_size : (f32, f32),
     indices: IndexBuffer<u8>,
     params : DrawParameters<'a>
@@ -132,6 +152,7 @@ impl<'a> Graphics<'a> {
 
         let params = DrawParameters{
             blend : Blend::alpha_blending(),
+            smooth: Some(Smooth::Nicest),
             .. Default::default()
         };
 
@@ -140,6 +161,7 @@ impl<'a> Graphics<'a> {
         Ok(Graphics{
             // Unwrap should be safe
             program: Program::from_source(&display, include_str!("shaders/texture.vs"), include_str!("shaders/texture.fs"), None).unwrap(),
+            rect_program: Program::from_source(&display, include_str!("shaders/rect.vs"), include_str!("shaders/rect.fs"), None).unwrap(),
             display: display,
             params : params,
             indices: indices,
@@ -209,6 +231,10 @@ impl<'a> Drawer<'a>{
     pub fn texture<'b>(&'b mut self, texture: &'b Texture) -> TextureDrawer<'b>{
         TextureDrawer::new(self, self.graphics, texture)
     }
+    /// Returns an object for drawing a rectangle to the screen
+    pub fn rect<'b>(&'b mut self, rect: &'b Rect) -> RectDrawer<'b>{
+        RectDrawer::new(self, self.graphics, rect)
+    }
 }
 
 impl<'a> Deref for Drawer<'a>{
@@ -234,7 +260,7 @@ impl<'a> Drop for Drawer<'a>{
 }
 
 /// Object for drawing textures to the screen using the builder pattern
-#[must_use = "`TextureDrawer` is lazy and does nothing until consumed"]
+#[must_use = "drawers are lazy and do nothing until consumed"]
 pub struct TextureDrawer<'a>{
     /// The position on the screen where the texture will be drawn
     pub pos: (f32, f32),
@@ -299,5 +325,100 @@ impl<'a> TextureDrawer<'a> {
         };
 
         target.draw(&texture.vertex_buffer, &graphics.indices, &graphics.program, &uniforms, &graphics.params)
+    }
+}
+
+/// A simple rectangle that can be drawn on the screen
+pub struct Rect{
+    vertex_buffer: VertexBuffer<RectVertex>
+}
+
+impl Rect {
+    pub fn new(display: &Display, width: f32, height: f32) -> Result<Self, ::glium::vertex::BufferCreationError>{
+        let (w, h) = (width/2., height/2.);
+        VertexBuffer::new(display, &[
+            RectVertex::new(0, -w, -h),
+            RectVertex::new(1,  w, -h),
+            RectVertex::new(2,  w,  h),
+            RectVertex::new(3, -w,  h)
+        ]).map(|vb| Rect{
+            vertex_buffer: vb
+        })
+    }
+}
+
+/// Object for drawing rectangles to the screen using the builder pattern
+#[must_use = "drawers are lazy and do nothing until consumed"]
+pub struct RectDrawer<'a>{
+    rect: &'a Rect,
+    /// The position on the screen where the it will be drawn
+    pub pos: (f32, f32),
+    sin_cos: (f32, f32),
+    /// The colours the rectangle will drawn with
+    pub colours: [[f32; 4]; 4],
+    target: &'a mut Frame,
+    graphics: &'a Graphics<'a>
+}
+
+impl<'a> RectDrawer<'a>{
+    #[inline(always)]
+    fn new(target: &'a mut Frame, graphics: &'a Graphics, rect: &'a Rect) -> Self {
+        RectDrawer{
+            rect: rect,
+            pos: (0., 0.),
+            sin_cos: (0., 1.),
+            colours: [[1.; 4]; 4],
+            target: target,
+            graphics: graphics
+        }
+    }
+    /// Sets the position the rectangle will be drawn at
+    #[inline]
+    pub fn pos(self, pos: (f32, f32)) -> Self{
+        RectDrawer{
+            pos: pos,
+            .. self
+        }
+    }
+    #[inline]
+    /// Sets the rotation of the rectangle to be drawn on the screen
+    pub fn rotation(self, rot: f32) -> Self{
+        RectDrawer{
+            sin_cos: rot.sin_cos(),
+            .. self
+        }
+    }
+    /// Sets the colour on all corners of the rectangle
+    #[inline]
+    pub fn colour_whole(self, colour: [f32; 4]) -> Self{
+        RectDrawer{
+            colours: [colour; 4],
+            .. self
+        }
+    }
+    /// Sets the colours on each corner of the rectangle
+    #[inline]
+    pub fn colours(self, colours: [[f32; 4]; 4]) -> Self{
+        RectDrawer{
+            colours: colours,
+            .. self
+        }
+    }
+    /// Consumes self and draws the rectangle to the screen with the given options
+    pub fn draw(self) -> Result<(), ::glium::DrawError>{
+        let RectDrawer{rect, pos: (x, y), sin_cos: (sin, cos), colours, target, graphics} = self;
+
+        let uniforms = uniform! {
+            h_size : graphics.h_size,
+            colours: colours,
+            matrix: [
+                [ cos, sin, 0., 0.],
+                [-sin, cos, 0., 0.],
+                [  0.,  0., 1., 0.],
+                [  x ,  y , 0., 1.],
+            ]
+        };
+
+        target.draw(&rect.vertex_buffer, &graphics.indices, &graphics.rect_program, &uniforms, &graphics.params)
     }
 }
