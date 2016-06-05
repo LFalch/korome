@@ -1,11 +1,10 @@
 #version 140
 
 in vec2 position;
-in uint index;
+in vec4 colour;
 
-out vec4 colour;
+out vec4 v_colour;
 
-uniform mat4 colours;
 uniform mat4 matrix;
 uniform vec2 h_size;
 
@@ -16,5 +15,5 @@ void main() {
     pos.y /= h_size.y;
 
     gl_Position = pos;
-    colour = colours[index];
+    v_colour = colour;
 }

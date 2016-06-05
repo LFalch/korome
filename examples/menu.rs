@@ -23,8 +23,8 @@ fn main() {
 
         match state{
             MainMenu => {
-                drawer.texture(&start_game).pos((0., 35.)).draw().unwrap();
-                drawer.texture(&quit_game).pos((0., -35.)).draw().unwrap();
+                start_game.drawer().pos((0., 35.)).draw(&mut drawer).unwrap();
+                quit_game.drawer().pos((0., -35.)).draw(&mut drawer).unwrap();
 
                 for &e in info.get_mouse_events(){
                     if let (true, MouseButton::Left) = e{
@@ -37,7 +37,7 @@ fn main() {
                 }
             },
             MainGame => {
-                drawer.texture(&planet).pos(pos.into()).draw().unwrap();
+                planet.drawer().pos(pos.into()).draw(&mut drawer).unwrap();
 
                 let vel = 100. * info.delta as f32;
 

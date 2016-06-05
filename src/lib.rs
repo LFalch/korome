@@ -9,18 +9,18 @@ extern crate quick_error;
 
 /// Module with an easy to use struct quick games with very simple logic
 pub mod easy;
+
+mod vertex;
 mod draw;
 mod logic;
 mod vector;
 
-pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Rect, RectDrawer};
+pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer};
 pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
 pub use vector::{Vector2, FloatVector};
 
 /// Result type for `korome::TextureError`
 pub type TextureResult = Result<Texture, TextureError>;
-/// Result type for `glium::DrawError`
-pub type DrawResult = Result<(), glium::DrawError>;
 
 quick_error! {
     /// Wraps together all errors that can occur creating `Texture`s

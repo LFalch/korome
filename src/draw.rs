@@ -11,48 +11,13 @@ use glium::glutin::WindowBuilder;
 use std::path::Path;
 use std::ops::{Deref, DerefMut};
 
-use super::{DrawResult, TextureResult};
-
-#[derive(Copy, Clone)]
-struct Vertex {
-    position  : [f32; 2],
-    tex_coords: [f32; 2]
-}
-
-implement_vertex!(Vertex, position, tex_coords);
-
-impl Vertex{
-    #[inline]
-    fn new(position: [f32; 2], tex_coords: [f32; 2]) -> Self{
-        Vertex{
-            position  : position,
-            tex_coords: tex_coords,
-        }
-    }
-}
-
-#[derive(Copy, Clone)]
-struct RectVertex {
-    index: u32,
-    position: [f32; 2]
-}
-
-implement_vertex!(RectVertex, index, position);
-
-impl RectVertex{
-    #[inline]
-    fn new(i: u32, x: f32, y: f32) -> Self{
-        RectVertex{
-            index: i,
-            position: [x, y]
-        }
-    }
-}
+use super::TextureResult;
+use ::vertex::{TextureVertex, ColourVertex};
 
 /// A 2D texture that is ready to be drawn
 pub struct Texture{
     tex: Texture2d,
-    vertex_buffer: VertexBuffer<Vertex>,
+    vertex_buffer: VertexBuffer<TextureVertex>,
 }
 
 impl Texture {
@@ -83,16 +48,25 @@ impl Texture {
         let (w, h) = (width as f32 / 2.0, height as f32 / 2.0);
 
         let vb = try!(VertexBuffer::new(display, &[
-            Vertex::new([-w, -h], [0.0, 0.0]),
-            Vertex::new([ w, -h], [1.0, 0.0]),
-            Vertex::new([ w,  h], [1.0, 1.0]),
-            Vertex::new([-w,  h], [0.0, 1.0])
+            TextureVertex::new([-w, -h], [0.0, 0.0]),
+            TextureVertex::new([ w, -h], [1.0, 0.0]),
+            TextureVertex::new([ w,  h], [1.0, 1.0]),
+            TextureVertex::new([-w,  h], [0.0, 1.0])
         ]));
 
         Ok(Texture {
             tex: try!(Texture2d::new(display, image)),
             vertex_buffer: vb,
         })
+    }
+    /// Returns an object used for drawing the texture onto the screen with a `Drawer`
+    pub fn drawer(&self) -> TextureDrawer{
+        TextureDrawer{
+            pos: (0., 0.),
+            sin_cos: (0., 1.),
+            colour: [1., 1., 1., 1.],
+            texture: self
+        }
     }
 }
 
@@ -127,10 +101,10 @@ quick_error! {
 pub struct Graphics<'a> {
     display: Display,
     program: Program,
-    rect_program: Program,
+    colour_program: Program,
     h_size : (f32, f32),
-    indices: IndexBuffer<u8>,
-    params : DrawParameters<'a>
+    params: DrawParameters<'a>,
+    indices: IndexBuffer<u8>
 }
 
 impl<'a> Graphics<'a> {
@@ -161,7 +135,7 @@ impl<'a> Graphics<'a> {
         Ok(Graphics{
             // Unwrap should be safe
             program: Program::from_source(&display, include_str!("shaders/texture.vs"), include_str!("shaders/texture.fs"), None).unwrap(),
-            rect_program: Program::from_source(&display, include_str!("shaders/rect.vs"), include_str!("shaders/rect.fs"), None).unwrap(),
+            colour_program: Program::from_source(&display, include_str!("shaders/colour.vs"), include_str!("shaders/colour.fs"), None).unwrap(),
             display: display,
             params : params,
             indices: indices,
@@ -203,7 +177,7 @@ pub struct Drawer<'a>{
 impl<'a> Drawer<'a>{
     #[inline]
     /// Creates a new `Drawer` to draw the next frame
-    pub fn new(graphics: &'a Graphics<'a>) -> Self{
+    pub fn new(graphics: &'a Graphics) -> Self{
         Drawer{
             target: graphics.draw(),
             graphics: graphics
@@ -214,26 +188,6 @@ impl<'a> Drawer<'a>{
     /// Clears the screen with the specified colour
     pub fn clear(&mut self, red: f32, green: f32, blue: f32){
         self.clear_color(red, green, blue, 1.)
-    }
-    /// Draws a texture onto the screen
-    #[deprecated(since = "0.11.1", note="use Drawer::texture() instead")]
-    #[inline]
-    pub fn draw_texture(&mut self, texture: &Texture, x: f32, y: f32, rotation: f32) -> DrawResult{
-        self.texture(texture).pos((x, y)).rotation(rotation).draw()
-    }
-    /// Draws a texture onto the screen without rotation
-    #[deprecated(since = "0.11.1", note="use Drawer::texture() instead")]
-    #[inline]
-    pub fn draw_texture_rigid(&mut self, texture: &Texture, x: f32, y: f32) -> DrawResult{
-        self.texture(texture).pos((x, y)).draw()
-    }
-    /// Returns an object for drawing texture to the screen
-    pub fn texture<'b>(&'b mut self, texture: &'b Texture) -> TextureDrawer<'b>{
-        TextureDrawer::new(self, self.graphics, texture)
-    }
-    /// Returns an object for drawing a rectangle to the screen
-    pub fn rect<'b>(&'b mut self, rect: &'b Rect) -> RectDrawer<'b>{
-        RectDrawer::new(self, self.graphics, rect)
     }
 }
 
@@ -267,23 +221,10 @@ pub struct TextureDrawer<'a>{
     sin_cos: (f32, f32),
     /// The colour the texture will drawn with
     pub colour: [f32; 4],
-    target: &'a mut Frame,
-    graphics: &'a Graphics<'a>,
     texture: &'a Texture
 }
 
 impl<'a> TextureDrawer<'a> {
-    #[inline(always)]
-    fn new(target: &'a mut Frame, graphics: &'a Graphics, texture: &'a Texture) -> Self {
-        TextureDrawer{
-            pos: (0., 0.),
-            sin_cos: (0., 1.),
-            colour: [1., 1., 1., 1.],
-            target: target,
-            graphics: graphics,
-            texture: texture
-        }
-    }
     /// Sets the position the texture will be drawn at
     #[inline]
     pub fn pos(self, pos: (f32, f32)) -> Self{
@@ -309,11 +250,11 @@ impl<'a> TextureDrawer<'a> {
         }
     }
     /// Consumes self and draws the texture to the screen with the given options
-    pub fn draw(self) -> Result<(), ::glium::DrawError>{
-        let TextureDrawer{pos: (x, y), sin_cos: (sin, cos), colour, target, graphics, texture} = self;
+    pub fn draw(self, drawer: &mut Drawer) -> Result<(), ::glium::DrawError>{
+        let TextureDrawer{pos: (x, y), sin_cos: (sin, cos), colour, texture} = self;
 
         let uniforms = uniform! {
-            h_size: graphics.h_size,
+            h_size: drawer.graphics.h_size,
             tex   : &texture.tex,
             colour: colour,
             matrix: [
@@ -324,58 +265,74 @@ impl<'a> TextureDrawer<'a> {
             ]
         };
 
-        target.draw(&texture.vertex_buffer, &graphics.indices, &graphics.program, &uniforms, &graphics.params)
+        drawer.draw(&texture.vertex_buffer, &drawer.graphics.indices, &drawer.graphics.program, &uniforms, &drawer.graphics.params)
     }
 }
 
 /// A simple rectangle that can be drawn on the screen
-pub struct Rect{
-    vertex_buffer: VertexBuffer<RectVertex>
+pub struct Quad{
+    vertex_buffer: VertexBuffer<ColourVertex>
 }
 
-impl Rect {
-    pub fn new(display: &Display, width: f32, height: f32) -> Result<Self, ::glium::vertex::BufferCreationError>{
-        let (w, h) = (width/2., height/2.);
+impl Quad {
+    /// Creates a new quad from the vertices with one colour for the whole quad
+    pub fn new(display: &Display, colour: [f32; 4], vertices: [[f32; 2]; 4]) -> Result<Self, ::glium::vertex::BufferCreationError>{
         VertexBuffer::new(display, &[
-            RectVertex::new(0, -w, -h),
-            RectVertex::new(1,  w, -h),
-            RectVertex::new(2,  w,  h),
-            RectVertex::new(3, -w,  h)
-        ]).map(|vb| Rect{
+            ColourVertex::new(vertices[0], colour),
+            ColourVertex::new(vertices[1], colour),
+            ColourVertex::new(vertices[2], colour),
+            ColourVertex::new(vertices[3], colour)
+        ]).map(|vb| Quad{
             vertex_buffer: vb
         })
     }
-}
-
-/// Object for drawing rectangles to the screen using the builder pattern
-#[must_use = "drawers are lazy and do nothing until consumed"]
-pub struct RectDrawer<'a>{
-    rect: &'a Rect,
-    /// The position on the screen where the it will be drawn
-    pub pos: (f32, f32),
-    sin_cos: (f32, f32),
-    /// The colours the rectangle will drawn with
-    pub colours: [[f32; 4]; 4],
-    target: &'a mut Frame,
-    graphics: &'a Graphics<'a>
-}
-
-impl<'a> RectDrawer<'a>{
-    #[inline(always)]
-    fn new(target: &'a mut Frame, graphics: &'a Graphics, rect: &'a Rect) -> Self {
-        RectDrawer{
-            rect: rect,
+    /// Creates a new rectangular quad from the width and height with one colour
+    pub fn new_rect(display: &Display, colour: [f32; 4], width: f32, height: f32) -> Result<Self, ::glium::vertex::BufferCreationError>{
+        let (w, h) = (width/2., height/2.);
+        VertexBuffer::new(display, &[
+            ColourVertex::new([-w, -h], colour),
+            ColourVertex::new([ w, -h], colour),
+            ColourVertex::new([ w,  h], colour),
+            ColourVertex::new([-w,  h], colour)
+        ]).map(|vb| Quad{
+            vertex_buffer: vb
+        })
+    }
+    /// Creates a new quad from the vertices with each with vertice having its own colour
+    pub fn with_colours(display: &Display, vertices: [[f32; 2]; 4], colours: [[f32; 4]; 4]) -> Result<Self, ::glium::vertex::BufferCreationError>{
+        VertexBuffer::new(display, &[
+            ColourVertex::new(vertices[0], colours[0]),
+            ColourVertex::new(vertices[1], colours[1]),
+            ColourVertex::new(vertices[2], colours[2]),
+            ColourVertex::new(vertices[3], colours[3]),
+        ]).map(|vb| Quad{
+            vertex_buffer: vb
+        })
+    }
+    /// Returns an object used for drawing the quad onto the screen with a `Drawer`
+    pub fn drawer(&self) -> QuadDrawer{
+        QuadDrawer{
+            quad: self,
             pos: (0., 0.),
-            sin_cos: (0., 1.),
-            colours: [[1.; 4]; 4],
-            target: target,
-            graphics: graphics
+            sin_cos: (0., 1.)
         }
     }
+}
+
+/// Object for drawing polygons to the screen using the builder pattern
+#[must_use = "drawers are lazy and do nothing until consumed"]
+pub struct QuadDrawer<'a>{
+    quad: &'a Quad,
+    /// The position on the screen where the it will be drawn
+    pub pos: (f32, f32),
+    sin_cos: (f32, f32)
+}
+
+impl<'a> QuadDrawer<'a>{
     /// Sets the position the rectangle will be drawn at
     #[inline]
     pub fn pos(self, pos: (f32, f32)) -> Self{
-        RectDrawer{
+        QuadDrawer{
             pos: pos,
             .. self
         }
@@ -383,34 +340,17 @@ impl<'a> RectDrawer<'a>{
     #[inline]
     /// Sets the rotation of the rectangle to be drawn on the screen
     pub fn rotation(self, rot: f32) -> Self{
-        RectDrawer{
+        QuadDrawer{
             sin_cos: rot.sin_cos(),
             .. self
         }
     }
-    /// Sets the colour on all corners of the rectangle
-    #[inline]
-    pub fn colour_whole(self, colour: [f32; 4]) -> Self{
-        RectDrawer{
-            colours: [colour; 4],
-            .. self
-        }
-    }
-    /// Sets the colours on each corner of the rectangle
-    #[inline]
-    pub fn colours(self, colours: [[f32; 4]; 4]) -> Self{
-        RectDrawer{
-            colours: colours,
-            .. self
-        }
-    }
     /// Consumes self and draws the rectangle to the screen with the given options
-    pub fn draw(self) -> Result<(), ::glium::DrawError>{
-        let RectDrawer{rect, pos: (x, y), sin_cos: (sin, cos), colours, target, graphics} = self;
+    pub fn draw(self, drawer: &mut Drawer) -> Result<(), ::glium::DrawError>{
+        let QuadDrawer{quad, pos: (x, y), sin_cos: (sin, cos)} = self;
 
         let uniforms = uniform! {
-            h_size : graphics.h_size,
-            colours: colours,
+            h_size : drawer.graphics.h_size,
             matrix: [
                 [ cos, sin, 0., 0.],
                 [-sin, cos, 0., 0.],
@@ -419,6 +359,6 @@ impl<'a> RectDrawer<'a>{
             ]
         };
 
-        target.draw(&rect.vertex_buffer, &graphics.indices, &graphics.rect_program, &uniforms, &graphics.params)
+        drawer.draw(&quad.vertex_buffer, &drawer.graphics.indices, &drawer.graphics.colour_program, &uniforms, &drawer.graphics.params)
     }
 }
