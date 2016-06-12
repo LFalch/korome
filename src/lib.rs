@@ -3,6 +3,7 @@
 
 #[macro_use]
 pub extern crate glium;
+extern crate num_traits;
 extern crate image;
 #[macro_use]
 extern crate quick_error;
@@ -17,7 +18,7 @@ mod vector;
 
 pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer};
 pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
-pub use vector::{Vector2, FloatVector};
+pub use vector::Vector2;
 
 /// Result type for `korome::TextureError`
 pub type TextureResult = Result<Texture, TextureError>;

@@ -1,3 +1,5 @@
+use ::num_traits::Float;
+
 /// Representation of a mathematical vector e.g. a position or velocity
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Vector2<T>(pub T, pub T);
@@ -5,52 +7,36 @@ pub struct Vector2<T>(pub T, pub T);
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, Div, Neg};
 use std::convert::From;
 
-/// Special methods for floating point vectors
-pub trait FloatVector<F>{
+impl<T: Float> Vector2<T>{
     /// Creates a new unit vector in a specific direction
-    fn unit_vector(F) -> Self;
+    pub fn unit_vector(direction: T) -> Self{
+        let (y, x) = direction.sin_cos();
+        Vector2(x, y)
+    }
     /// Normalises the vector
-    fn normalise(self) -> Self;
+    pub fn normalise(self) -> Self{
+        self / self.length()
+    }
     /// Returns the magnitude or the length of the vector
-    fn length(&self) -> F;
+    pub fn length(self) -> T{
+        self.0.hypot(self.1)
+    }
     /// Returns direction the vector is pointing
-    fn direction(&self) -> F;
+    pub fn direction(self) -> T{
+        (-self.1).atan2(self.0)
+    }
     /// Returns direction towards another vector
-    fn direction_to(&self, &Self) -> F;
+    pub fn direction_to(self, other: Self) -> T{
+        (other-self).direction()
+    }
     /// Returns the distance betweens two vectors
-    fn distance_to(&self, &Self) -> F;
+    pub fn distance_to(self, other: Self) -> T{
+        (self-other).length()
+    }
 }
 
 macro_rules! impl_for {
     ($($t:ty)*) => {$(
-        impl FloatVector<$t> for Vector2<$t>{
-            fn unit_vector(direction: $t) -> Self{
-                let (y, x) = direction.sin_cos();
-                Vector2(x, y)
-            }
-
-            fn normalise(self) -> Self{
-                let length = self.length();
-                self / length
-            }
-
-            fn length(&self) -> $t{
-                self.0.hypot(self.1)
-            }
-
-            fn direction(&self) -> $t{
-                (-self.1).atan2(self.0)
-            }
-
-            fn direction_to(&self, other: &Self) -> $t{
-                (*other-*self).direction()
-            }
-
-            fn distance_to(&self, other: &Self) -> $t{
-                (self.0 - other.0).hypot(self.1 - other.1)
-            }
-        }
-
         impl Mul<Vector2<$t>> for $t{
             type Output = Vector2<$t>;
 
@@ -58,7 +44,6 @@ macro_rules! impl_for {
                 Vector2(self * rhs.0, self * rhs.1)
             }
         }
-
         impl Div<Vector2<$t>> for $t{
             type Output = Vector2<$t>;
 
@@ -67,9 +52,7 @@ macro_rules! impl_for {
             }
         }
     )*};
-}
-
-impl_for!(f32 f64);
+}impl_for!{f32 f64}
 
 impl<T> Vector2<T> {
     /// Returns the dot product of two vectors

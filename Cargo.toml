@@ -20,6 +20,7 @@ exclude = [
 [dependencies]
 glium = "0.14"
 quick-error = "1.0.0"
+num-traits = "0.1.32"
 
 [dependencies.image]
 version = "0.10"
