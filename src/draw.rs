@@ -213,6 +213,29 @@ impl<'a> Drop for Drawer<'a>{
     }
 }
 
+macro_rules! set {
+    ($(#[$m:meta])* fn $d:ident; $f:ident: $T:ty) => (
+        #[inline]
+        $(#[$m])*
+        pub fn $f(self, $f: $T) -> Self{
+            $d{
+                $f: $f,
+                .. self
+            }
+        }
+    );
+    ($(#[$m:meta])* fn $d:ident; $f:ident: $T:ty => $field:ident: $e:expr) => (
+        #[inline]
+        $(#[$m])*
+        pub fn $f(self, $f: $T) -> Self{
+            $d{
+                $field: $e,
+                .. self
+            }
+        }
+    );
+}
+
 /// Object for drawing textures to the screen using the builder pattern
 #[must_use = "drawers are lazy and do nothing until consumed"]
 pub struct TextureDrawer<'a>{
@@ -225,30 +248,12 @@ pub struct TextureDrawer<'a>{
 }
 
 impl<'a> TextureDrawer<'a> {
-    /// Sets the position the texture will be drawn at
-    #[inline]
-    pub fn pos(self, pos: (f32, f32)) -> Self{
-        TextureDrawer{
-            pos: pos,
-            .. self
-        }
-    }
-    /// Sets the colours the texture will be drawn with
-    #[inline]
-    pub fn colour(self, colour: [f32; 4]) -> Self{
-        TextureDrawer{
-            colour: colour,
-            .. self
-        }
-    }
-    #[inline]
-    /// Sets the rotation of the texture to be drawn on the screen
-    pub fn rotation(self, rot: f32) -> Self{
-        TextureDrawer{
-            sin_cos: rot.sin_cos(),
-            .. self
-        }
-    }
+    set!{/// Sets the position the texture will be drawn at
+        fn TextureDrawer; pos: (f32, f32)}
+    set!{/// Sets the colours the texture will be drawn with
+        fn TextureDrawer; colour: [f32; 4]}
+    set!{/// Sets the rotation of the texture to be drawn on the screen
+        fn TextureDrawer; rotation: f32 => sin_cos: rotation.sin_cos()}
     /// Consumes self and draws the texture to the screen with the given options
     pub fn draw(self, drawer: &mut Drawer) -> Result<(), ::glium::DrawError>{
         let TextureDrawer{pos: (x, y), sin_cos: (sin, cos), colour, texture} = self;
@@ -329,22 +334,10 @@ pub struct QuadDrawer<'a>{
 }
 
 impl<'a> QuadDrawer<'a>{
-    /// Sets the position the rectangle will be drawn at
-    #[inline]
-    pub fn pos(self, pos: (f32, f32)) -> Self{
-        QuadDrawer{
-            pos: pos,
-            .. self
-        }
-    }
-    #[inline]
-    /// Sets the rotation of the rectangle to be drawn on the screen
-    pub fn rotation(self, rot: f32) -> Self{
-        QuadDrawer{
-            sin_cos: rot.sin_cos(),
-            .. self
-        }
-    }
+    set!{/// Sets the position the rectangle will be drawn at
+        fn QuadDrawer; pos: (f32, f32)}
+    set!{/// Sets the rotation of the rectangle to be drawn on the screen
+        fn QuadDrawer; rotation: f32 => sin_cos: rotation.sin_cos()}
     /// Consumes self and draws the rectangle to the screen with the given options
     pub fn draw(self, drawer: &mut Drawer) -> Result<(), ::glium::DrawError>{
         let QuadDrawer{quad, pos: (x, y), sin_cos: (sin, cos)} = self;
