@@ -9,11 +9,13 @@ extern crate quick_error;
 
 /// Module with an easy to use struct quick games with very simple logic
 pub mod easy;
+
+mod vertex;
 mod draw;
 mod logic;
 mod vector;
 
-pub use draw::{Graphics, Texture, Drawer, TextureDrawer};
+pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer};
 pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
 pub use vector::{Vector2, FloatVector};
 
