@@ -76,14 +76,6 @@ impl<T> Vector2<T> {
     pub fn dot(self, other: Self) -> T where T: Mul<Output=T> + Add<Output=T>{
         self.0 * other.0 + self.1 * other.1
     }
-    /// Returns the fields in a tuple
-    pub fn to_tuple(self) -> (T, T){
-        (self.0, self.1)
-    }
-    /// Returns an array of the two fields
-    pub fn to_array(self) -> [T; 2]{
-        [self.0, self.1]
-    }
 }
 
 impl<T: Add<Output=T>> Add for Vector2<T>{
@@ -140,10 +132,24 @@ impl<T: Neg<Output=T>> Neg for Vector2<T>{
     }
 }
 
+impl<T> Into<[T; 2]> for Vector2<T>{
+    #[inline(always)]
+    fn into(self) -> [T; 2]{
+        [self.0, self.1]
+    }
+}
+
+impl<T: Copy> From<[T; 2]> for Vector2<T>{
+    #[inline(always)]
+    fn from(array: [T; 2]) -> Self{
+        Vector2(array[0], array[1])
+    }
+}
+
 impl<T> Into<(T, T)> for Vector2<T>{
     #[inline(always)]
     fn into(self) -> (T, T){
-        self.to_tuple()
+        (self.0, self.1)
     }
 }
 
