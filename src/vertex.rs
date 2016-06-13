@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct TextureVertex {
     position  : [f32; 2],
     tex_coords: [f32; 2]
@@ -16,7 +16,7 @@ impl TextureVertex{
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct ColourVertex {
     position: [f32; 2],
     colour  : [f32; 4]

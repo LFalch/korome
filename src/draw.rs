@@ -15,6 +15,7 @@ use super::TextureResult;
 use ::vertex::{TextureVertex, ColourVertex};
 
 /// A 2D texture that is ready to be drawn
+#[derive(Debug)]
 pub struct Texture{
     tex: Texture2d,
     vertex_buffer: VertexBuffer<TextureVertex>,
@@ -238,6 +239,7 @@ macro_rules! set {
 
 /// Object for drawing textures to the screen using the builder pattern
 #[must_use = "drawers are lazy and do nothing until consumed"]
+#[derive(Debug, Clone)]
 pub struct TextureDrawer<'a>{
     /// The position on the screen where the texture will be drawn
     pub pos: (f32, f32),
@@ -276,6 +278,7 @@ impl<'a> TextureDrawer<'a> {
 }
 
 /// A simple rectangle that can be drawn on the screen
+#[derive(Debug)]
 pub struct Quad{
     vertex_buffer: VertexBuffer<ColourVertex>
 }
@@ -327,6 +330,7 @@ impl Quad {
 
 /// Object for drawing polygons to the screen using the builder pattern
 #[must_use = "drawers are lazy and do nothing until consumed"]
+#[derive(Debug, Clone)]
 pub struct QuadDrawer<'a>{
     quad: &'a Quad,
     /// The position on the screen where the it will be drawn
