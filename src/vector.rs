@@ -23,7 +23,7 @@ impl<T: Float> Vector2<T>{
     }
     /// Returns direction the vector is pointing
     pub fn direction(self) -> T{
-        (-self.1).atan2(self.0)
+        self.1.atan2(self.0)
     }
     /// Returns direction towards another vector
     pub fn direction_to(self, other: Self) -> T{
