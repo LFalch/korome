@@ -11,8 +11,7 @@ uniform vec2 h_size;
 void main() {
     vec4 pos = matrix * vec4(position, 0.0, 1.0);
 
-    pos.x /= h_size.x;
-    pos.y /= h_size.y;
+    pos.xy /= h_size.xy;
 
     gl_Position = pos;
     v_colour = colour;
