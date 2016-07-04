@@ -4,7 +4,7 @@ use ::num_traits::Float;
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Vector2<T>(pub T, pub T);
 
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, Div, Neg};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Neg};
 use std::convert::From;
 
 impl<T: Float> Vector2<T>{
@@ -56,23 +56,24 @@ macro_rules! impl_for {
 
 impl<T> Vector2<T> {
     /// Returns the dot product of two vectors
-    pub fn dot(self, other: Self) -> T where T: Mul<Output=T> + Add<Output=T>{
+    pub fn dot(self, other: Self) -> <<T as Mul>::Output as Add>::Output
+    where T: Mul, <T as Mul>::Output: Add{
         self.0 * other.0 + self.1 * other.1
     }
 }
 
-impl<T: Add<Output=T>> Add for Vector2<T>{
-    type Output = Self;
+impl<T: Add> Add for Vector2<T>{
+    type Output = Vector2<T::Output>;
 
-    fn add(self, rhs: Self) -> Self{
+    fn add(self, rhs: Self) -> Self::Output{
         Vector2(self.0 + rhs.0, self.1 + rhs.1)
     }
 }
 
-impl<T: Sub<Output=T>> Sub for Vector2<T>{
-    type Output = Self;
+impl<T: Sub> Sub for Vector2<T>{
+    type Output = Vector2<T::Output>;
 
-    fn sub(self, rhs: Self) -> Self{
+    fn sub(self, rhs: Self) -> Self::Output{
         Vector2(self.0 - rhs.0, self.1 - rhs.1)
     }
 }
@@ -91,26 +92,40 @@ impl<T: SubAssign> SubAssign for Vector2<T>{
     }
 }
 
-impl<T: Mul<Output=T> + Copy> Mul<T> for Vector2<T>{
-    type Output = Self;
+impl<T: MulAssign + Copy> MulAssign<T> for Vector2<T>{
+    fn mul_assign(&mut self, rhs: T){
+        self.0 *= rhs;
+        self.1 *= rhs;
+    }
+}
 
-    fn mul(self, rhs: T) -> Self{
+impl<T: DivAssign + Copy> DivAssign<T> for Vector2<T>{
+    fn div_assign(&mut self, rhs: T){
+        self.0 /= rhs;
+        self.1 /= rhs;
+    }
+}
+
+impl<T: Mul + Copy> Mul<T> for Vector2<T>{
+    type Output = Vector2<T::Output>;
+
+    fn mul(self, rhs: T) -> Self::Output{
         Vector2(self.0 * rhs, self.1 * rhs)
     }
 }
 
-impl<T: Div<Output=T> + Copy> Div<T> for Vector2<T>{
-    type Output = Self;
+impl<T: Div + Copy> Div<T> for Vector2<T>{
+    type Output = Vector2<T::Output>;
 
-    fn div(self, rhs: T) -> Self{
+    fn div(self, rhs: T) -> Self::Output{
         Vector2(self.0/rhs, self.1/rhs)
     }
 }
 
-impl<T: Neg<Output=T>> Neg for Vector2<T>{
-    type Output = Self;
+impl<T: Neg> Neg for Vector2<T>{
+    type Output = Vector2<T::Output>;
 
-    fn neg(self) -> Self{
+    fn neg(self) -> Self::Output{
         Vector2(-self.0, -self.1)
     }
 }
