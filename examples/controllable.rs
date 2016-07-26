@@ -12,14 +12,16 @@ fn main() {
     let planet = include_texture!(graphics, "assets/planet.png").unwrap();
 
     // Create an `EasyGame` with a planet object using the texture
-    let g = EasyGame::with_vec(vec![
+    let g = EasyGameBuilder::new()
+    .with_vec(vec![
         Object{
             tex: &planet,
             x: -400.,
             y: 300.,
             theta: 0.
         }
-    ]);
+    ]).with_clear_colour(0., 0., 1.)
+    .build();
 
     run_until_closed(graphics, g)
 }
@@ -60,11 +62,10 @@ impl<'a> Obj for Object<'a>{
         }
     }
     fn draw(&self, drawer: &mut Drawer){
-        drawer.texture(self.tex)
+        self.tex.drawer()
             .pos((self.x, self.y))
             .rotation(self.theta)
             .colour([0., 0., 0., 0.5])
-            .draw()
-            .unwrap()
+            .draw(drawer)
     }
 }

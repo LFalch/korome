@@ -1,9 +1,9 @@
 #version 140
 
 in vec2 position;
-in vec2 tex_coords;
+in vec4 colour;
 
-out vec2 v_tex_coords;
+out vec4 v_colour;
 
 uniform mat4 matrix;
 uniform vec2 h_size;
@@ -14,5 +14,5 @@ void main() {
     pos.xy /= h_size.xy;
 
     gl_Position = pos;
-    v_tex_coords = tex_coords;
+    v_colour = colour;
 }

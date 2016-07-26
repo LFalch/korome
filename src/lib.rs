@@ -1,26 +1,31 @@
 #![warn(missing_docs, trivial_casts, trivial_numeric_casts)]
 //! A small game engine written in Rust.
+//!
+//! This crate is constantly changing and therefore highly unstable
 
 #[macro_use]
 pub extern crate glium;
+extern crate num_traits;
 extern crate image;
 #[macro_use]
 extern crate quick_error;
 
-/// Module with an easy to use struct quick games with very simple logic
+/// Module with a struct that should make it easy to create a simple game.
+///
+/// This module is constantly changing and therefore highly unstable.
 pub mod easy;
+
+mod vertex;
 mod draw;
 mod logic;
 mod vector;
 
-pub use draw::{Graphics, Texture, Drawer, TextureDrawer};
+pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer};
 pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
-pub use vector::{Vector2, FloatVector};
+pub use vector::Vector2;
 
 /// Result type for `korome::TextureError`
 pub type TextureResult = Result<Texture, TextureError>;
-/// Result type for `glium::DrawError`
-pub type DrawResult = Result<(), glium::DrawError>;
 
 quick_error! {
     /// Wraps together all errors that can occur creating `Texture`s
