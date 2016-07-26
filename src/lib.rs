@@ -1,5 +1,7 @@
 #![warn(missing_docs, trivial_casts, trivial_numeric_casts)]
 //! A small game engine written in Rust.
+//!
+//! This crate is constantly changing and therefore highly unstable
 
 #[macro_use]
 pub extern crate glium;
@@ -8,7 +10,9 @@ extern crate image;
 #[macro_use]
 extern crate quick_error;
 
-/// Module with an easy to use struct quick games with very simple logic
+/// Module with a struct that should make it easy to create a simple game.
+///
+/// This module is constantly changing and therefore highly unstable.
 pub mod easy;
 
 mod vertex;
