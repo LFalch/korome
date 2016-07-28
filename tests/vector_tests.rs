@@ -12,6 +12,7 @@ fn feminism(){
     assert_eq!(v0, v1);
     assert_eq!(v1, v0);
     assert_eq!(something_different, something_different);
+    assert!(nan.is_nan());
     assert!(nan != nan);
     assert!(nan != v0);
     assert!(nan != v1);
@@ -34,6 +35,9 @@ fn numberwang(){
     assert_eq!(v1/2., Vector2(2., 2.));
     assert_eq!(-v0, Vector2(-5., -3.));
     assert_eq!(-v1, Vector2(-4., -4.));
+    assert!((v0/0.).is_infinite());
+    assert!(v0.is_finite() && v0.is_normal());
+    assert!(v1.is_finite() && v1.is_normal());
 }
 
 #[test]

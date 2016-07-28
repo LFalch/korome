@@ -33,6 +33,22 @@ impl<T: Float> Vector2<T>{
     pub fn distance_to(self, other: Self) -> T{
         (self-other).length()
     }
+    /// Returns `true` if either component is `NaN`.
+    pub fn is_nan(&self) -> bool{
+        self.0.is_nan() || self.1.is_nan()
+    }
+    /// Returns `true` if either component is positive or negative infinity.
+    pub fn is_infinite(&self) -> bool{
+        self.0.is_infinite() || self.1.is_infinite()
+    }
+    /// Returns `true` if either component is neither infinite nor `NaN`.
+    pub fn is_finite(&self) -> bool{
+        self.0.is_finite() || self.1.is_finite()
+    }
+    /// Returns `true` if either component is neither zero, inifnite, subnormal nor `NaN`.
+    pub fn is_normal(&self) -> bool{
+        self.0.is_normal() || self.1.is_normal()
+    }
 }
 
 macro_rules! impl_for {
