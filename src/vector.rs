@@ -147,28 +147,28 @@ impl<T: Neg> Neg for Vector2<T>{
 }
 
 impl<T> Into<[T; 2]> for Vector2<T>{
-    #[inline(always)]
+    #[inline]
     fn into(self) -> [T; 2]{
         [self.0, self.1]
     }
 }
 
 impl<T: Copy> From<[T; 2]> for Vector2<T>{
-    #[inline(always)]
+    #[inline]
     fn from(array: [T; 2]) -> Self{
         Vector2(array[0], array[1])
     }
 }
 
 impl<T> Into<(T, T)> for Vector2<T>{
-    #[inline(always)]
+    #[inline]
     fn into(self) -> (T, T){
         (self.0, self.1)
     }
 }
 
 impl<T> From<(T, T)> for Vector2<T>{
-    #[inline(always)]
+    #[inline]
     fn from(tuple: (T, T)) -> Self{
         Vector2(tuple.0, tuple.1)
     }

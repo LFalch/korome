@@ -51,7 +51,7 @@ impl GameUpdate {
 }
 
 /// Runs the game until the window is closed
-pub fn run_until_closed<G: Game>(mut graphics: Graphics, mut g: G){
+pub fn run_until_closed<G: Game>(mut graphics: Graphics, mut game: G){
     let mut last = Instant::now();
     let mut mousepos = (0., 0.);
     let mut down_keys = HashSet::new();
@@ -103,7 +103,7 @@ pub fn run_until_closed<G: Game>(mut graphics: Graphics, mut g: G){
             mousepos : mousepos
         };
 
-        let update = g.frame(update, Drawer::new(&graphics));
+        let update = game.frame(update, Drawer::new(&graphics));
 
         if update.close{
             break

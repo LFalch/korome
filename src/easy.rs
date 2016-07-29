@@ -18,15 +18,15 @@ pub struct EasyGame<T: Obj>{
     clear_colour: (f32, f32, f32),
 }
 
-/// Used for making an EasyGame object
+/// Used for making an `EasyGame` object
 pub struct EasyGameBuilder<T: Obj>{
     objects: Option<Vec<T>>,
     clear_colour: (f32, f32, f32),
 }
 
 impl<T: Obj> EasyGameBuilder<T>{
-    #[inline(always)]
-    /// Create a new EasyGameBuilder
+    #[inline]
+    /// Create a new `EasyGameBuilder`
     pub fn new() -> Self{
         EasyGameBuilder{
             objects: None,
@@ -34,7 +34,7 @@ impl<T: Obj> EasyGameBuilder<T>{
         }
     }
 
-    #[inline(always)]
+    #[inline]
     /// Set an initial vector of objects
     pub fn with_vec(self, objs: Vec<T>) -> Self{
         EasyGameBuilder{
@@ -42,7 +42,7 @@ impl<T: Obj> EasyGameBuilder<T>{
             .. self
         }
     }
-    #[inline(always)]
+    #[inline]
     /// Set the colour that the screen is cleared with every frame
     pub fn with_clear_colour(self, r: f32, g: f32, b: f32) -> Self{
         EasyGameBuilder{
@@ -63,7 +63,7 @@ impl<T: Obj> EasyGameBuilder<T>{
 }
 
 impl<T: Obj> EasyGame<T>{
-    #[inline(always)]
+    #[inline]
     /// Consumes the object and returns the inner vector
     pub fn into_inner(self) -> Vec<T>{
         let EasyGame{objects, ..} = self;

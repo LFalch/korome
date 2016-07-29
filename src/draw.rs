@@ -151,7 +151,7 @@ impl<'a> Graphics<'a> {
     }
 }
 
-#[inline(always)]
+#[inline]
 // This function is only used inside `FrameInfo` when Event::Resized occurs
 pub fn resize(graphics: &mut Graphics, width: u32, height: u32){
     graphics.h_size = (width as f32 / 2.0, height as f32 / 2.0);
