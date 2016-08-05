@@ -30,7 +30,7 @@ fn main() {
                     if let (true, MouseButton::Left) = e{
                         match info.mousepos{
                             (-100. ... 100., 10. ... 65.) => state = MainGame,
-                            (-100. ... 100., -65. ... -10.) => return GameUpdate::nothing().set_close(true),
+                            (-100. ... 100., -65. ... -10.) => return GameUpdate::Close,
                             _ => ()
                         }
                     }
@@ -57,6 +57,6 @@ fn main() {
                 }
             }
         }
-        GameUpdate::nothing()
+        GameUpdate::Nothing
     });
 }

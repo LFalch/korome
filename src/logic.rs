@@ -35,13 +35,13 @@ pub enum GameUpdate{
 impl GameUpdate {
     /// Nothing should be changed
     #[inline]
-    #[deprecated(since = "<placeholder>", note="use the `GameUpdate` variants directly")]
+    #[deprecated(since = "0.12.3", note="use the `GameUpdate` variants directly")]
     pub fn nothing() -> Self{
         GameUpdate::Nothing
     }
 
     /// Set whether to close the game
-    #[deprecated(since = "<placeholder>", note="use the `GameUpdate` variants directly")]
+    #[deprecated(since = "0.12.3", note="use the `GameUpdate` variants directly")]
     pub fn set_close(self, close: bool) -> Self{
         if close{
             GameUpdate::Close
