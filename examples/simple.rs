@@ -20,6 +20,6 @@ fn main() {
             .pos((-154., 154.))
             .draw(&mut drawer);
 
-        GameUpdate::nothing()
+        GameUpdate::Nothing
     })
 }

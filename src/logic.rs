@@ -25,27 +25,28 @@ impl<F: FnMut(FrameInfo, Drawer) -> GameUpdate> Game for F{
 /// This is returned each frame from an object implementing `Game`.
 ///
 /// It describes anything the game should do, e.g. closing the game.
-pub struct GameUpdate{
-    /// Describes whether the game should be closed
-    pub close: bool,
-    _fill: ()
+pub enum GameUpdate{
+    /// Tells the game to close
+    Close,
+    /// Tells it do nothing
+    Nothing
 }
 
 impl GameUpdate {
     /// Nothing should be changed
     #[inline]
+    #[deprecated(since = "<placeholder>", note="use the `GameUpdate` variants directly")]
     pub fn nothing() -> Self{
-        GameUpdate{
-            close: false,
-            _fill: ()
-        }
+        GameUpdate::Nothing
     }
 
     /// Set whether to close the game
+    #[deprecated(since = "<placeholder>", note="use the `GameUpdate` variants directly")]
     pub fn set_close(self, close: bool) -> Self{
-        GameUpdate{
-            close: close,
-            .. self
+        if close{
+            GameUpdate::Close
+        }else{
+            GameUpdate::Nothing
         }
     }
 }
@@ -105,7 +106,7 @@ pub fn run_until_closed<G: Game>(mut graphics: Graphics, mut game: G){
 
         let update = game.frame(update, Drawer::new(&graphics));
 
-        if update.close{
+        if let GameUpdate::Close = update {
             break
         }
     }

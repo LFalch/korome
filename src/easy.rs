@@ -98,6 +98,6 @@ impl<T: Obj> Game for EasyGame<T>{
             obj.draw(&mut drawer);
         }
 
-        GameUpdate::nothing()
+        GameUpdate::Nothing
     }
 }
