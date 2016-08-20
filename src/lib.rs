@@ -5,11 +5,10 @@
 
 #[macro_use]
 pub extern crate glium;
-extern crate num_traits;
 extern crate image;
 #[macro_use]
 extern crate quick_error;
-extern crate simple-vector2d;
+extern crate simple_vector2d;
 
 /// Module with a struct that should make it easy to create a simple game.
 ///
@@ -19,11 +18,10 @@ pub mod easy;
 mod vertex;
 mod draw;
 mod logic;
-mod vector;
 
 pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer};
 pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
-pub use simple-vector2d::Vector2;
+pub use simple_vector2d::Vector2;
 
 /// Result type for `korome::TextureError`
 pub type TextureResult = Result<Texture, TextureError>;
