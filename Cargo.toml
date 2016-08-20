@@ -20,7 +20,7 @@ exclude = [
 [dependencies]
 glium = "0.15"
 quick-error = "~1"
-num-traits = "0.1.32"
+simple-vector2d = "0.1"
 
 [dependencies.image]
 version = "0.10"
