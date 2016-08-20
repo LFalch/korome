@@ -2,6 +2,7 @@ use ::num_traits::Float;
 
 /// Representation of a mathematical vector e.g. a position or velocity
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[deprecated(since = "0.12.4", note = "use the `simple-vector2d` crate instead")]
 pub struct Vector2<T>(pub T, pub T);
 
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Neg};
