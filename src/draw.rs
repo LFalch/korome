@@ -11,7 +11,7 @@ use glium::glutin::WindowBuilder;
 use std::path::Path;
 use std::ops::{Deref, DerefMut};
 
-use super::TextureResult;
+use super::{TextureResult, TextureError};
 use ::vertex::{TextureVertex, ColourVertex};
 
 /// A 2D texture that is ready to be drawn
@@ -25,20 +25,16 @@ impl Texture {
     #[inline]
     /// Creates a `Texture` from a PNG-encoded byte slice
     pub fn from_png_bytes(display: &Display, bytes: &[u8]) -> TextureResult{
-        Texture::new(display,
-            try!(
-                image::load_from_memory_with_format(bytes, image::PNG)
-            ).to_rgba()
-        )
+        image::load_from_memory_with_format(bytes, image::PNG)
+            .map_err(From::from)
+            .and_then(|img| Texture::new(display, img.to_rgba()))
     }
     #[inline]
     /// Creates a `Texture` from a file
     pub fn from_file<P: AsRef<Path>>(display: &Display, path: P) -> TextureResult{
-        Texture::new(display,
-            try!(
-                image::open(path)
-            ).to_rgba()
-        )
+        image::open(path)
+            .map_err(From::from)
+            .and_then(|img| Texture::new(display, img.to_rgba()))
     }
 
     /// Creates a `Texture` from an `image::RgbaImage`
@@ -48,17 +44,21 @@ impl Texture {
 
         let (w, h) = (width as f32 / 2.0, height as f32 / 2.0);
 
-        let vb = try!(VertexBuffer::new(display, &[
+        VertexBuffer::new(display, &[
             TextureVertex::new([-w, -h], [0.0, 0.0]),
             TextureVertex::new([ w, -h], [1.0, 0.0]),
             TextureVertex::new([ w,  h], [1.0, 1.0]),
             TextureVertex::new([-w,  h], [0.0, 1.0])
-        ]));
-
-        Ok(Texture {
-            tex: try!(Texture2d::new(display, image)),
-            vertex_buffer: vb,
-        })
+        ])
+        .map_err(TextureError::from)
+        .and_then(|vb|
+            Texture2d::new(display, image).map(|tex|
+                Texture{
+                    tex: tex,
+                    vertex_buffer: vb
+                }
+            ).map_err(From::from)
+        )
     }
     /// Returns an object used for drawing the texture onto the screen with a `Drawer`
     pub fn drawer(&self) -> TextureDrawer{
@@ -116,12 +116,12 @@ impl<'a> Graphics<'a> {
             .with_dimensions(width, height)
             .with_vsync()
             .build_glium()
-            .map_err(Into::into)
-            .and_then(Self::from_display)
+            .map_err(From::from)
+            .and_then(|x| Self::from_display(x).map_err(From::from))
     }
 
     /// Creates a new `Graphics` instance using the given display
-    pub fn from_display(display: Display) -> Result<Self, GraphicsCreationError> {
+    pub fn from_display(display: Display) -> Result<Self, ::glium::index::BufferCreationError> {
         let (w, h) = display.get_window().unwrap().get_inner_size().unwrap();
         let (w, h) = (w as f32 / 2.0, h as f32 / 2.0);
 
@@ -131,17 +131,24 @@ impl<'a> Graphics<'a> {
             .. Default::default()
         };
 
-        let indices = try!(IndexBuffer::new(&display, PrimitiveType::TriangleStrip, &[0u8, 1, 3, 2]));
+        IndexBuffer::new(&display, PrimitiveType::TriangleStrip, &[0u8, 1, 3, 2])
+            .map(|indices|
+                Graphics{
+                    // Unwrap should be safe
+                    program: Program::from_source(&display, include_str!("shaders/texture.vs"), include_str!("shaders/texture.fs"), None).unwrap(),
+                    colour_program: Program::from_source(&display, include_str!("shaders/colour.vs"), include_str!("shaders/colour.fs"), None).unwrap(),
+                    display: display,
+                    params : params,
+                    indices: indices,
+                    h_size : (w, h)
+                }
+            )
+    }
 
-        Ok(Graphics{
-            // Unwrap should be safe
-            program: Program::from_source(&display, include_str!("shaders/texture.vs"), include_str!("shaders/texture.fs"), None).unwrap(),
-            colour_program: Program::from_source(&display, include_str!("shaders/colour.vs"), include_str!("shaders/colour.fs"), None).unwrap(),
-            display: display,
-            params : params,
-            indices: indices,
-            h_size : (w, h)
-        })
+    #[inline]
+    /// Returns a mutable reference to the inner `DrawParameters`
+    pub fn get_mut_draw_parameters(&mut self) -> &mut DrawParameters<'a>{
+        &mut self.params
     }
 
     #[inline]
@@ -184,7 +191,7 @@ impl<'a> Drawer<'a>{
             graphics: graphics
         }
     }
-
+    
     #[inline]
     /// Clears the screen with the specified colour
     pub fn clear(&mut self, red: f32, green: f32, blue: f32){

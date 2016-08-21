@@ -2,7 +2,6 @@
 extern crate korome;
 
 use korome::*;
-use korome::easy::*;
 
 fn main() {
     // Create the `Graphics` object, which creates a window with the given title and dimensions
@@ -11,32 +10,24 @@ fn main() {
     // Load a texture, whose bytes have been loaded at compile-time
     let planet = include_texture!(graphics, "assets/planet.png").unwrap();
 
-    // Create an `EasyGame` with a planet object using the texture
-    let g = EasyGameBuilder::new()
-    .with_vec(vec![
-        Object{
-            tex: &planet,
-            x: -400.,
-            y: 300.,
-            theta: 0.
-        }
-    ]).with_clear_colour(0., 0., 1.)
-    .build();
-
-    run_until_closed(graphics, g)
+    run_until_closed(graphics, Controllable{
+        tex: &planet,
+        x: -400.,
+        y: 300.,
+        theta: 0.,
+    })
 }
 
-struct Object<'a>{
+struct Controllable<'a>{
     x: f32,
     y: f32,
     theta: f32,
     tex: &'a Texture
 }
 
-impl<'a> Obj for Object<'a>{
-    fn update(&mut self, info: &FrameInfo){
-        let delta = info.delta as f32;
-
+impl<'a> Game for Controllable<'a>{
+    fn frame(&mut self, info: &FrameInfo, drawer: &mut Drawer) -> GameUpdate{
+        let delta = info.delta;
         let vel = 200.0 * delta;
 
         // Make the planet move with WASD and the arrow keys and rotate with Q and E
@@ -60,12 +51,14 @@ impl<'a> Obj for Object<'a>{
                 self.theta -= delta
             }
         }
-    }
-    fn draw(&self, drawer: &mut Drawer){
+
+        drawer.clear(0., 0., 0.);
+
         self.tex.drawer()
             .pos((self.x, self.y))
             .rotation(self.theta)
-            .colour([0., 0., 0., 0.5])
-            .draw(drawer)
+            .draw(drawer);
+
+        GameUpdate::Nothing
     }
 }

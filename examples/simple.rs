@@ -13,12 +13,12 @@ fn main() {
 
     // The first argument is ignored because
     // this example doesn't need any `FrameInfo`
-    run_until_closed(graphics, |_: FrameInfo, mut drawer: Drawer| {
+    run_until_closed(graphics, |_: &FrameInfo, drawer: &mut Drawer| {
         drawer.clear(0.1, 0., 1.);
-        texture.drawer().draw(&mut drawer);
+        texture.drawer().draw(drawer);
         quad.drawer()
             .pos((-154., 154.))
-            .draw(&mut drawer);
+            .draw(drawer);
 
         GameUpdate::Nothing
     })

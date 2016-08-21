@@ -5,41 +5,41 @@ use korome::*;
 
 use State::*;
 enum State {
-    MainMenu, MainGame
+    Menu, InGame
 }
 
 fn main() {
     let graphics = Graphics::new("Menu example!", 800, 600).unwrap();
 
-    let planet = include_texture!(graphics, "assets/planet.png").unwrap();
-    let start_game = include_texture!(graphics, "assets/start_game.png").unwrap();
-    let quit_game = include_texture!(graphics, "assets/quit_game.png").unwrap();
+    let planet = Texture::from_file(&graphics, "examples/assets/planet.png").unwrap();
+    let start_game = Texture::from_file(&graphics, "examples/assets/start_game.png").unwrap();
+    let quit_game = Texture::from_file(&graphics, "examples/assets/quit_game.png").unwrap();
 
-    let mut state = MainMenu;
-    let mut pos = Vector2(0., 0.);
+    let mut state = Menu;
+    let mut pos = (0., 0.);
 
-    run_until_closed(graphics, |info: FrameInfo, mut drawer: Drawer|{
+    run_until_closed(graphics, |info: &FrameInfo, drawer: &mut Drawer|{
         drawer.clear(0., 0., 0.);
 
         match state{
-            MainMenu => {
-                start_game.drawer().pos((0., 35.)).draw(&mut drawer);
-                quit_game.drawer().pos((0., -35.)).draw(&mut drawer);
+            Menu => {
+                start_game.drawer().pos((0., 35.)).draw(drawer);
+                quit_game.drawer().pos((0., -35.)).draw(drawer);
 
                 for &e in info.get_mouse_events(){
                     if let (true, MouseButton::Left) = e{
                         match info.mousepos{
-                            (-100. ... 100., 10. ... 65.) => state = MainGame,
+                            (-100. ... 100., 10. ... 65.) => state = InGame,
                             (-100. ... 100., -65. ... -10.) => return GameUpdate::Close,
                             _ => ()
                         }
                     }
                 }
             },
-            MainGame => {
-                planet.drawer().pos(pos.into()).draw(&mut drawer);
+            InGame => {
+                planet.drawer().pos(pos.into()).draw(drawer);
 
-                let vel = 100. * info.delta as f32;
+                let vel = 100. * info.delta;
 
                 is_down!{info;
                     A, Left => {

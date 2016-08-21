@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::ops::{Deref, DerefMut};
 
 use super::{Game, GameUpdate, FrameInfo, Drawer};
@@ -89,13 +91,13 @@ impl<T: Obj> DerefMut for EasyGame<T>{
 }
 
 impl<T: Obj> Game for EasyGame<T>{
-    fn frame(&mut self, info: FrameInfo, mut drawer: Drawer) -> GameUpdate{
+    fn frame(&mut self, info: &FrameInfo, drawer: &mut Drawer) -> GameUpdate{
         let (r, g, b) = self.clear_colour;
         drawer.clear(r, g, b);
 
         for obj in &mut self.objects{
-            obj.update(&info);
-            obj.draw(&mut drawer);
+            obj.update(info);
+            obj.draw(drawer);
         }
 
         GameUpdate::Nothing

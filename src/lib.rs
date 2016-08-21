@@ -5,7 +5,6 @@
 
 #[macro_use]
 pub extern crate glium;
-extern crate num_traits;
 extern crate image;
 #[macro_use]
 extern crate quick_error;
@@ -13,16 +12,15 @@ extern crate quick_error;
 /// Module with a struct that should make it easy to create a simple game.
 ///
 /// This module is constantly changing and therefore highly unstable.
+#[deprecated(since = "0.13.0", note = "unsure of usefulness")]
 pub mod easy;
 
 mod vertex;
 mod draw;
 mod logic;
-mod vector;
 
 pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer};
 pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
-pub use vector::Vector2;
 
 /// Result type for `korome::TextureError`
 pub type TextureResult = Result<Texture, TextureError>;
