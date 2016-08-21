@@ -19,7 +19,7 @@ mod vertex;
 mod draw;
 mod logic;
 
-pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer};
+pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer, GraphicsCreationError};
 pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
 
 /// Result type for `korome::TextureError`
