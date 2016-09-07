@@ -8,20 +8,11 @@ matrix:
   - rust: nightly
 env:
   global:
-  - secure: WraI34cQSGtr6i0EIg+i+RcmzMiaDWhYpdLeE18WKFxeTX2rUubsvTWaBun0KhRBdix1ir20d0VARYZfDzz/3Z+0NbD3OnhYzVzOU2vCX5nnlctjk3rglraV8KJOn60jJbgRqvD8r0T2D9nbo1LgpzjkHveYEqmqWODhUdidf1INqnQzv2vKpmRhSzjg1lhMfVVbBxFPk9gKwN+Jj9NiOeHpqeuCX3UUl6DkRi+TYcdB5ierD18Lxcxii3wyihUT8O3diA1jbzcolsN7DdQ9skTF51ZFsSw716DPZB2++yxFE3vx0vssNTnZLfL6AdgAn+is0XAcFl0UmJkrlZh/NJ2fL3NZ2lUeQbSfbAuz7O5XjUP1BezO/zCXFjGt/wzPSfRs5/AP1ADPc4iWRwFu86W06xYHCIwGPaudTCFAezJinV+mII3oUHPl7zTlD/DuaiBabLVIJHHCMClTq2qe9WaZJgIYAHVSHvjlPU6kmhdHmYTLs8v2DGEOVmWxu+svSQGmCdOe+O6PmePMduG1fAZ5nZQAqO+HUI2p3CgKE6yENI7F1V6LsXvjVW9F0JriByKf/+poX3KaBnER0btR+dCCK6/X39RUm0pvVb1wJU8vnfHU6MRr2/Wz7U7gU1KEggZwkax/ID5JdU3teJ7YsxIwzRPHBfFiEWPBbOOS0zg=
   - secure: dVUJP6sIROOnJwkueodu5oizbVZvOAszsxK8lqb3nepltflMMoXnnyJ9SMW5rqwrwMB0GmyJyNVJ9F3KPYlsjFdPc6K4uvA9YndxagU+gJay7V+N6PwBp4f6qB9id5Wry9p5CtmM6samCam8ljpjzpeY4uK45Du43e9CgEQfm8uEZqs6MonTwmd2oq9zq9DXHLywHhT/QDvhgWR9M8KYse9FV7gXGIIOBjNIdrKelOMSjkkPBsHEIdhDE50Ltg0qV1n2P4Ral4Jqkfe8b/k9WDyPlYqW7Qot39LMGdOvwhiYlXpmymXyuM94WCqpJWR4n2FF5+zkt2fBtTbKNjwBkWfHQjC7T2eexCD0lMfymwsoLQ8a/ovCG3RRC4OCzaavBYq6T2QKQ0P7FXvxAMa6zsavVT9sdgNENK0udsW/nJObALStrvK6QzoMhHPfvRdTZ48cSplbSekEoPkRyG6wVStb8R9e+qOBO0N8gUS0NhiT5Otqfgn+dEnrz2ofGQcy1GIEUef9ah6gqWJtGmSVTO7q4+fFqphyq9JqqdC2vRvfRSkevW+AEATP+3DgcUUeDiwAYBSzb7vKgfCuq1sJUEVApI550dqoXCA3nhquAywvTp9t8puOJDz4oSrz2AmnhwDWHD27A/bcxolKgnmPngnT8YKVpr4rzlQ3btezIKE=
 script:
 - cargo build --verbose
 - cargo test --verbose
 after_success:
-- |
-  [ $TRAVIS_RUST_VERSION = stable ] &&
-  [ $TRAVIS_BRANCH = master ] &&
-  [ $TRAVIS_PULL_REQUEST = false ] &&
-  cargo doc &&
-  sudo pip install ghp-import &&
-  ghp-import -n target/doc &&
-  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
 - |
   [ $TRAVIS_RUST_VERSION = stable ] &&
   [ $TRAVIS_BRANCH = master ] &&
