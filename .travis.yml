@@ -1,5 +1,4 @@
 language: rust
-
 rust:
 - stable
 - nightly
@@ -18,3 +17,6 @@ after_success:
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
   cargo publish --token ${CRATESIO_TOKEN}
+notifications:
+  slack:
+    secure: QgUavoG2KtKWeS/AYZvoGZuaxJNytYNXi9VQONqJKHAIzbCcKjM/3Jgf3Knx8dZHnmUYFJMiu2DcS3FYxzgV9/g+kO4NJI1cDAtYPVZeK0AS+zAC68ytStLW+CSq8OkFemuptNuBjSchLy0fkYlMkZoB0nXVXzyiObu2iocYUB8gCL8NeWhGx+Yd3NUUnK6Cqq1+j39ELb/kPAYgTmPSd6mivJ+0sk78cM2odqijsfmtwCDRKwZAnNcIFLA410Oyv1p5eV8+rJMkGAcGWog72dPnNTziPgG/ZpjcM+9DN8GquppRd7zAfqyZrfb9y4Y4IZsp2hTOWO429Sz09QtOz++g8KWHUxIk5v2KDrpH9bQcdMzwbEKs+QhcnMWsEfgbaYJ24f//G+JypatUhRSj1nz9XoMX38iO/TZPRi7s+iBhNM427ZH4h0YCkrBpdvWPre80mWnXJZSWASR/je8W7gRRrMMDmLUwWsg3hYxx00l4H9sUIDitfX0Nobojomvd6pciY50/kSArJ33CCAb8aOOVauGA8V3zD5GPPdBnj0OtLoex1CzTUrg+mrEQMrz195k71lOqqlLTwbjozSzT/3eF027AnL6zkQETIq41ma8t2ZDyDYYBk8DyxBLLkNBBNhWx/MbphWlPl6wW8oqjPc3d/Tfj32LYKBQnvgV7Xj8=
