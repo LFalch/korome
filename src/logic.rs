@@ -4,9 +4,9 @@ use super::{Graphics, Drawer};
 use draw::resize;
 use std::time::Instant;
 
-use glium::glutin::{Event, ElementState};
+use glium::glutin::ElementState;
 
-pub use glium::glutin::{VirtualKeyCode, MouseButton};
+pub use glium::glutin::{VirtualKeyCode, MouseButton, Event};
 
 /// Methods `run_until_closed()` will call
 pub trait Game{
@@ -45,6 +45,7 @@ pub fn run_until_closed<G: Game>(mut graphics: Graphics, mut game: G){
 
     'game: loop{
         let mut keys = Vec::new();
+        // mice?
         let mut mouses = Vec::new();
         let mut misc_events = Vec::new();
 

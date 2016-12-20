@@ -20,7 +20,7 @@ mod draw;
 mod logic;
 
 pub use draw::{Graphics, Texture, Drawer, TextureDrawer, Quad, QuadDrawer, GraphicsCreationError};
-pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton};
+pub use logic::{run_until_closed, Game, GameUpdate, FrameInfo, VirtualKeyCode, MouseButton, Event};
 
 /// Result type for `korome::TextureError`
 pub type TextureResult = Result<Texture, TextureError>;
