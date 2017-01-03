@@ -10,7 +10,7 @@ A game engine in Rust (previously Java) using [glium](https://github.com/tomaka/
 To use korome, add this to your Cargo.toml:
 ```toml
 [dependencies]
-korome = "0.13"
+korome = "0.14"
 ```
 
 Though right now, this crate is very unstable and breaks all the time.
