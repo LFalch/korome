@@ -9,12 +9,6 @@ extern crate image;
 #[macro_use]
 extern crate quick_error;
 
-/// Module with a struct that should make it easy to create a simple game.
-///
-/// This module is constantly changing and therefore highly unstable.
-#[deprecated(since = "0.13.0", note = "unsure of usefulness")]
-pub mod easy;
-
 mod vertex;
 mod draw;
 mod logic;
