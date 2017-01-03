@@ -26,7 +26,8 @@ struct Controllable<'a>{
 }
 
 impl<'a> Game for Controllable<'a>{
-    fn frame(&mut self, info: &FrameInfo, drawer: &mut Drawer) -> GameUpdate{
+    type ReturnType = ();
+    fn frame(&mut self, info: &FrameInfo, drawer: &mut Drawer) {
         let delta = info.delta;
         let vel = 200.0 * delta;
 
@@ -58,7 +59,5 @@ impl<'a> Game for Controllable<'a>{
             .pos((self.x, self.y))
             .rotation(self.theta)
             .draw(drawer);
-
-        GameUpdate::Nothing
     }
 }

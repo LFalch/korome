@@ -19,7 +19,5 @@ fn main() {
         quad.drawer()
             .pos((-154., 154.))
             .draw(drawer);
-
-        GameUpdate::Nothing
     })
 }

@@ -2,7 +2,7 @@
 
 use std::ops::{Deref, DerefMut};
 
-use super::{Game, GameUpdate, FrameInfo, Drawer};
+use super::{Game, FrameInfo, Drawer};
 
 /// Describes objects that can change because of events and be drawn to the screen
 pub trait Obj{
@@ -91,7 +91,8 @@ impl<T: Obj> DerefMut for EasyGame<T>{
 }
 
 impl<T: Obj> Game for EasyGame<T>{
-    fn frame(&mut self, info: &FrameInfo, drawer: &mut Drawer) -> GameUpdate{
+    type ReturnType = ();
+    fn frame(&mut self, info: &FrameInfo, drawer: &mut Drawer) {
         let (r, g, b) = self.clear_colour;
         drawer.clear(r, g, b);
 
@@ -99,7 +100,5 @@ impl<T: Obj> Game for EasyGame<T>{
             obj.update(info);
             obj.draw(drawer);
         }
-
-        GameUpdate::Nothing
     }
 }

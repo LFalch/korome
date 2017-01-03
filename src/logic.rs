@@ -10,14 +10,23 @@ pub use glium::glutin::{VirtualKeyCode, MouseButton, Event};
 
 /// Methods `run_until_closed()` will call
 pub trait Game{
+    /// The return type of the `frame` function.
+    ///
+    /// If you never want to close the game from within the frame function,
+    /// it can just be set to `()`,
+    /// otherwise you will you have to use `bool` or `GameUpdate`.
+    ///
+    /// When using a `bool`, returning `false` will close the game.
+    type ReturnType: Into<GameUpdate>;
     /// Method that gets called each frame from `run_until_closed()`.
     ///
     /// Should return a `GameUpdate` specifying things the game should do.
-    fn frame(&mut self, &FrameInfo, &mut Drawer) -> GameUpdate;
+    fn frame(&mut self, &FrameInfo, &mut Drawer) -> Self::ReturnType;
 }
 
-impl<F: FnMut(&FrameInfo, &mut Drawer) -> GameUpdate> Game for F{
-    fn frame(&mut self, info: &FrameInfo, drawer: &mut Drawer) -> GameUpdate{
+impl<R: Into<GameUpdate>, F: FnMut(&FrameInfo, &mut Drawer) -> R> Game for F {
+    type ReturnType = R;
+    fn frame(&mut self, info: &FrameInfo, drawer: &mut Drawer) -> R {
         (self)(info, drawer)
     }
 }
@@ -33,7 +42,28 @@ pub enum GameUpdate{
     Nothing
 }
 
+impl From<()> for GameUpdate {
+    /// Simply returns `GameUpdate::Nothing`
+    fn from(_: ()) -> Self {
+        Default::default()
+    }
+}
+
+impl From<bool> for GameUpdate {
+    /// `false` turns into `GameUpdate::Close`
+    ///
+    /// `true` turns into `GameUpdate::Nothing`
+    fn from(keep_running: bool) -> Self {
+        if keep_running {
+            GameUpdate::Nothing
+        } else {
+            GameUpdate::Close
+        }
+    }
+}
+
 impl Default for GameUpdate{
+    /// Returns `GameUpdate::Nothing`
     fn default() -> Self{GameUpdate::Nothing}
 }
 
@@ -94,7 +124,7 @@ pub fn run_until_closed<G: Game>(mut graphics: Graphics, mut game: G){
             mousepos : mousepos
         };
 
-        let update = game.frame(&update, &mut Drawer::new(&graphics));
+        let update = game.frame(&update, &mut Drawer::new(&graphics)).into();
 
         if let GameUpdate::Close = update {
             break
