@@ -1,6 +1,6 @@
 [package]
 name = "korome"
-version = "0.14.0"
+version = "0.14.1"
 authors = ["LFalch <lucas@wasd.dk>"]
 description="WIP game engine using glium"
 documentation="https://docs.rs/korome/"
@@ -18,10 +18,10 @@ exclude = [
 ]
 
 [dependencies]
-glium = "0.15"
+glium = ">=0.15, <0.17"
 quick-error = "~1"
 
 [dependencies.image]
-version = "0.10"
+version = ">=0.10, <0.13"
 default-features = false
 features = ["png_codec"]
